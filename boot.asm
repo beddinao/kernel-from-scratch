@@ -1,20 +1,26 @@
 bits 32
 
+MAGIC_NM	equ 0x1badb002
+FLAGS	equ 0x0
+CSUM	equ -(MAGIC_NM + FLAGS)
+_8KB	equ 0x2000
+
+global start
+extern kmain
+
 section .multiboot
-	dd 0x1badb002
-	dd 0x0
-	dd - (0x1badb002 + 0x0)
+align 4
+	dd MAGIC_NM
+	dd FLAGS
+	dd CSUM
 
 section .text
-global start
-extern main
-
 start:
 	cli
-	mov esp, stack_space
-	call main
+	mov esp, stack_p
+	call kmain
 	hlt
 
 section .bss
-resb 8192
-stack_space:
+resb _8KB
+stack_p:
