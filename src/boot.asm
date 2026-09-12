@@ -1,7 +1,7 @@
 bits 32
 
 MAGIC_NM	equ 0x1badb002
-FLAGS	equ 0x0
+FLAGS	equ 0b10
 CSUM	equ -(MAGIC_NM + FLAGS)
 _8KB	equ 0x2000
 
@@ -18,6 +18,8 @@ section .text
 start:
 	cli
 	mov esp, stack_p
+	push ebx
+	push eax
 	call kmain
 	hlt
 
