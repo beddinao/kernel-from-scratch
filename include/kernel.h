@@ -5,6 +5,9 @@
 #define VGA_H	25
 #define VGA_SIZE	VGA_W*VGA_H
 #define VGA_MEM	0xb8000
+#define VGA_INFO_ST	0xA7D8C0
+#define VGA_INIT_CURSOR_COL 0x0
+#define VGA_INIT_CURSOR_ROW 0x0
 
 #define MB1_MAGIC_NM 0x1badb002
 
@@ -31,6 +34,21 @@ struct multiboot_info_st {
 	uint32_t boot_loader_name;
 };
 
+struct multiboot_mmap_st {
+	uint32_t size;
+	uint64_t base_addr;
+	uint64_t length;
+	uint32_t type;
+};
+
+struct vga_info_st {
+	uint64_t base_addr;
+	uint8_t cur_bg_color;
+	uint8_t cur_fg_color;
+	uint8_t cur_cursor_row;
+	uint8_t cur_cursor_col;
+};
+
 enum vga_color {
 	VGA_BLACK,
 	VGA_BLUE,
@@ -51,6 +69,6 @@ enum vga_color {
 };
 
 // vga.c
-void clear_screen(uint8_t);
+void clear_screen();
 
 #endif

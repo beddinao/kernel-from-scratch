@@ -33,7 +33,6 @@ uint32_t putBL_name(uint32_t idx, uint32_t p) {
 }
 
 int kmain(uint32_t magic, uint32_t mm_ptr) {
-	clear_screen(VGA_BLUE);
 
 	((uint16_t*)VGA_MEM)[0] = (VGA_BLUE << 4|VGA_WHITE) << 8| '1';
 	((uint16_t*)VGA_MEM)[1] = (VGA_BLUE << 4|VGA_WHITE) << 8| '3';
@@ -66,7 +65,7 @@ int kmain(uint32_t magic, uint32_t mm_ptr) {
 	uint64_t ram_size = 0;
 	
 	uint32_t i = 160;
-	for (; ptr <= eptr; i += 80) {
+	for (; ptr < eptr; i += 80) {
 		idx = i;
 
 		uint32_t size = *(ptr+3) << 24 | *(ptr+2) << 16 | *(ptr+1) << 8 | *ptr;
