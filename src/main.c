@@ -33,10 +33,10 @@ int kmain(uint32_t magic, uint32_t mm_ptr) {
 
 		ram_size += mb_mmap->length_high << 32 | mb_mmap->length_low;
 
-		vga_putdword("st: 0x", mb_mmap->base_addr_low);
-		vga_putdword("", mb_mmap->base_addr_high);
-		vga_putdword(" len: 0x", mb_mmap->length_low);
-		vga_putdword("", mb_mmap->length_high);
+		vga_putdword("st: 0x", mb_mmap->base_addr_high);
+		vga_putdword("", mb_mmap->base_addr_low);
+		vga_putdword(" len: 0x", mb_mmap->length_high);
+		vga_putdword("", mb_mmap->length_low);
 		vga_putdword(" t: 0x", mb_mmap->type);
 
 		ptr += mb_mmap->size + 4;
