@@ -1,13 +1,19 @@
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
 
-#define VGA_W	80
-#define VGA_H	25
-#define VGA_SIZE	VGA_W*VGA_H
-#define VGA_MEM	0xb8000
+#define VGA_W 80
+#define VGA_H 25
+#define VGA_SIZE VGA_W*VGA_H
+#define VGA_MEM 0xb8000
 #define VGA_INFO_ST	0xA7D8C0
 #define VGA_INIT_CURSOR_COL 0x0
 #define VGA_INIT_CURSOR_ROW 0x0
+#define CRTC_IDX_PORT 0x3d4
+#define CRTC_DATA_PORT 0x3d5
+#define CRTC_RG_STC 0xa
+#define CRTC_RG_ENC 0xb
+#define CRTC_RG_PH 0xe
+#define CRTC_RG_PL 0xf
 
 #define MB1_MAGIC_NM 0x1badb002
 
@@ -36,8 +42,10 @@ struct multiboot_info_st {
 
 struct multiboot_mmap_st {
 	uint32_t size;
-	uint64_t base_addr;
-	uint64_t length;
+	uint32_t base_addr_low;
+	uint32_t base_addr_high;
+	uint32_t length_low;
+	uint32_t length_high;
 	uint32_t type;
 };
 
@@ -69,6 +77,17 @@ enum vga_color {
 };
 
 // vga.c
-void clear_screen();
+void vga_init();
+void vga_putchar(uint8_t);
+void vga_putstr(uint8_t*);
+void vga_puthexnm(uint8_t);
+void vga_putword(uint8_t*, uint16_t);
+void vga_putdword(uint8_t*, uint32_t);
+void vga_set_fg_color(uint8_t);
+void vga_set_bg_color(uint8_t);
+void vga_enable_cursor();
+void vga_disable_cursor();
+void vga_update_cursor();
+void vga_clear_screen();
 
 #endif
