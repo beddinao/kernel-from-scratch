@@ -49,9 +49,9 @@ int kmain(uint32_t magic, uint32_t mm_ptr) {
 	vga_init();
 
 	(void)magic;
-	vga_putstr("1337");
+	//vga_putstr("1337");
 
-	vga_putdword("\nkernel_start: 0x", (uint32_t)&_kernel_start);
+	vga_putdword("kernel_start: 0x", (uint32_t)&_kernel_start);
 	vga_putdword("\nkernel_end: 0x", (uint32_t)&_kernel_end);
 
 	dump_mb_info(mm_ptr);
