@@ -21,11 +21,13 @@
 #define _32KB 0x8000
 #define _16KB 0x4000
 #define _08KB 0x2000
-#define _04KB 0x1000
+#define _04KB 0x100
 
 #define PMMF_S _04KB
 #define PMMF_U 1
 #define PMMF_F 0
+
+#define GDT_DEF 0x800
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
@@ -115,5 +117,14 @@ void vga_clear_screen();
 
 // pmm.c
 void pmm_init(uint32_t);
+void pmm_free();
+uint32_t pmm_alloc();
+uint8_t pmm_isused(uint32_t);
+void pmm_alloc_frame(uint32_t);
+void pmm_alloc_chunk_len(uint32_t, uint32_t);
+void pmm_alloc_chunk_eptr(uint32_t, uint32_t);
+void pmm_free_chunk_len(uint32_t, uint32_t);
+void pmm_free_chunk_eptr(uint32_t, uint32_t);
+
 
 #endif

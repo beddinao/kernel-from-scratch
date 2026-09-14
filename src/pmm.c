@@ -12,8 +12,6 @@ void pmm_free(uint32_t addr) {
 	uint32_t frame_idx = (addr / PMMF_S);
 	pmm_info->bitmap[ frame_idx / 8 ] &= ~(1 << (frame_idx % 8));
 	// 01000[1]00 & 11111[0]11 
-	//vga_putdword("\nfree: 0x", addr);
-	//vga_putchar('\n');
 }
 
 uint32_t pmm_alloc() {
@@ -35,25 +33,30 @@ uint32_t pmm_alloc() {
 	return 0;
 }
 
-void pmm_free_chunk(uint32_t base_addr, uint32_t length) {
-	uint32_t enptr = base_addr + length;
-	for (; base_addr < enptr; base_addr += PMMF_S)
+uint8_t pmm_isused(uint32_t addr) {
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	uint32_t frame_idx = (addr / PMMF_S);
+	return (pmm_info->bitmap[ frame_idx / 8 ] >> (frame_idx % 8)) & 1;
+}
+
+void pmm_free_chunk_eptr(uint32_t base_addr, uint32_t eptr) {
+	for (; base_addr < eptr; base_addr += PMMF_S)
 		pmm_free(base_addr);
 }
 
-void pmm_alloc_chunk_len(uint32_t base_addr, uint32_t length) {
-	vga_putdword("\nalloc_chunk: 0x", base_addr);
-	vga_putdword(" len: 0x", length);
-	uint32_t enptr = base_addr + length;
-	for (; base_addr < enptr; base_addr += PMMF_S)
-		pmm_alloc(base_addr);
+void pmm_free_chunk_len(uint32_t base_addr, uint32_t length) {
+	pmm_free_chunk_eptr(base_addr, base_addr + length);
 }
 
 void pmm_alloc_chunk_eptr(uint32_t base_addr, uint32_t eptr) {
 	vga_putdword("\nalloc_chunk: 0x", base_addr);
 	vga_putdword(" eptr: 0x", eptr);
 	for (; base_addr < eptr; base_addr += PMMF_S)
-		pmm_alloc(base_addr);
+		pmm_alloc_frame(base_addr);
+}
+
+void pmm_alloc_chunk_len(uint32_t base_addr, uint32_t length) {
+	pmm_alloc_chunk_eptr(base_addr, base_addr + length);
 }
 
 void pmm_dump_mmap(uint32_t sidx, uint32_t eidx) {
@@ -81,7 +84,7 @@ void pmm_alloc_reserved_system() {
 void pmm_alloc_reserved_kernel() {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
 	pmm_alloc_chunk_eptr((uint32_t)&_kernel_start, (uint32_t)&_kernel_end); // kernel itself
-	pmm_alloc_chunk_len((uint32_t)&_kernel_end, pmm_info->size); // pmm bitmap
+	pmm_alloc_chunk_len((uint32_t)&_kernel_end, pmm_info->size + sizeof(struct pmm_info_st)); // pmm bitmap
 	pmm_alloc_chunk_len(VGA_INFO_ST, sizeof(struct vga_info_st)); // vga info
 }
 
@@ -105,13 +108,21 @@ void pmm_init(uint32_t mm_ptr) {
 	for (; mb_mmap_ptr < mb_mmap_eptr;) {
 		mb_mmap_st = (struct multiboot_mmap_st*)mb_mmap_ptr;
 		if (mb_mmap_st->type == 1) 
-			pmm_free_chunk(mb_mmap_st->base_addr_low, mb_mmap_st->length_low);
+			pmm_free_chunk_len(mb_mmap_st->base_addr_low, mb_mmap_st->length_low);
 			
 		mb_mmap_ptr += mb_mmap_st->size + 4;
 	}
 
 	pmm_alloc_reserved_system();
 	pmm_alloc_reserved_kernel();
+
+	/*
+	uint32_t frame = pmm_alloc();
+	vga_putdword("\nalloced: 0x", frame);
+	vga_putdword(" isused: ", pmm_isused(frame));
+	pmm_free(frame);
+	vga_putdword(" isused after free: ", pmm_isused(frame));
+	*/	
 
 	/*pmm_free_chunk(PMMF_S, PMMF_S * 2);
 	pmm_dump_mmap(0, 5);
