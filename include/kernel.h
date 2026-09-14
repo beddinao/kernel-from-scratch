@@ -17,6 +17,16 @@
 
 #define MB1_MAGIC_NM 0x1badb002
 
+#define _64KB 0x10000
+#define _32KB 0x8000
+#define _16KB 0x4000
+#define _08KB 0x2000
+#define _04KB 0x1000
+
+#define PMMF_S _04KB
+#define PMMF_U 1
+#define PMMF_F 0
+
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
@@ -27,16 +37,23 @@ typedef short int int16_t;
 typedef int int32_t;
 typedef long int int64_t;
 
+extern uint32_t _kernel_start;
+extern uint32_t _kernel_end;
+extern uint64_t _tot_ram_size;
+
 // https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#Boot-information-format
 
 struct multiboot_info_st {
 	uint32_t flags;
 	uint32_t mem_lower;
 	uint32_t mem_upper;
-	uint32_t unrelevant_region[8]; // 256, 32b
+	uint32_t unrelevant_region[2];
+	uint32_t mods_count;
+	uint32_t mods_addr;
+	uint32_t unrelevant_region2[4]; // 24b
 	uint32_t mmap_length;
           uint32_t mmap_addr;	
-	uint32_t unrelevant_region2[3]; // 96, 12b
+	uint32_t unrelevant_region3[3]; // 96, 12b
 	uint32_t boot_loader_name;
 };
 
@@ -47,6 +64,12 @@ struct multiboot_mmap_st {
 	uint32_t length_low;
 	uint32_t length_high;
 	uint32_t type;
+};
+
+struct pmm_info_st {
+	uint32_t size; 
+	uint32_t frames_count;
+	uint8_t bitmap[];
 };
 
 struct vga_info_st {
@@ -89,5 +112,8 @@ void vga_enable_cursor();
 void vga_disable_cursor();
 void vga_update_cursor();
 void vga_clear_screen();
+
+// pmm.c
+void pmm_init(uint32_t);
 
 #endif

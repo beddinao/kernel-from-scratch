@@ -2,7 +2,7 @@ KERNEL_BIN = kernel.bin
 ISO_NAME   = kfs.iso
 
 CC         = gcc
-CFLAGS     = -m32 -Iinclude -fno-builtin -fno-stack-protector -nostdlib -nodefaultlibs
+CFLAGS     = -m32 -masm=intel -Iinclude -fno-builtin -fno-stack-protector -nostdlib -nodefaultlibs
 AS         = nasm
 ASFLAGS    = -f elf32
 LDFLAGS    = -m elf_i386 -T linker.ld
@@ -35,7 +35,7 @@ build/%.o: src/%.asm
 	$(AS) $(ASFLAGS) $< -o $@ 
 
 run:
-	qemu-system-i386 -m 128M -display gtk,zoom-to-fit=on -cdrom $(ISO_NAME)
+	qemu-system-i386 -m 128M -display gtk,zoom-to-fit=on -cdrom $(ISO_NAME) #-full-screen
 
 clean:
 	rm -rf build iso

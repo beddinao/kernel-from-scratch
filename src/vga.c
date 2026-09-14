@@ -10,7 +10,6 @@ void vga_clear_screen() {
 
 void vga_enable_cursor() {
 	asm (
-		".intel_syntax noprefix;\n"
 
 		"mov dx, 0x3d4\n"
 		"mov al, 0xa\n"
@@ -28,20 +27,17 @@ void vga_enable_cursor() {
 		"mov al, 15\n"
 		"out dx, al\n"
 
-		".att_syntax prefix;\n"
 	);
 }
 
 void vga_disable_cursor() {
 	asm (
-		".intel_syntax noprefix;\n"
 		"mov dx, 0x3d4\n"
 		"mov al, 0xa\n"
 		"out dx, al\n"
 		"mov dx, 0x3d5\n"
 		"mov al, 0b00100000\n"
 		"out dx, al\n"
-		".att_syntax prefix;\n"
 	);
 }
 
@@ -49,7 +45,6 @@ void vga_update_cursor() {
 	struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
 	uint16_t cur_cursor = vga_info->cur_cursor_row*VGA_W + vga_info->cur_cursor_col;
 	asm (
-		".intel_syntax noprefix;\n"
 
 		"mov dx, 0x3d4\n"
 		"mov al, 0xe\n"
@@ -67,7 +62,6 @@ void vga_update_cursor() {
 		"mov al, %b1\n"
 		"out dx, al\n"
 
-		".att_syntax prefix;\n"
 		:
 		: "q" (cur_cursor >> 8),
 		  "q" (cur_cursor & 0xff)
