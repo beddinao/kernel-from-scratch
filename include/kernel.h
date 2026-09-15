@@ -28,7 +28,8 @@
 #define PMMF_F 0
 
 #define GDT_BASE 0x800
-#define GDT_D_S 8 
+#define GDT_D_S 8
+#define GDT_D_C 7
 #define GDT_D_RING_0 0b00
 #define GDT_D_RING_1 0b01
 #define GDT_D_RING_2 0b10
@@ -61,6 +62,11 @@ struct gdt_segment_desc {
 	uint8_t access;
 	uint8_t limit_high_flags;
 	uint8_t base_high;
+} __attribute__((packed));
+
+struct gdt_register {
+	uint16_t size;
+	uint32_t gdt_addr;
 } __attribute__((packed));
 
 // https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#Boot-information-format

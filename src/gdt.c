@@ -1,13 +1,13 @@
 #include <kernel.h>
 
-void gdt_set_segment_access(struct gdt_segment_desc* seg_desc, uint8_t type, uint8_t rw, uint8_t ring) {
+void gdt_set_segment_access(volatile struct gdt_segment_desc* seg_desc, uint8_t type, uint8_t rw, uint8_t ring) {
 	seg_desc->access = 0b10010000;
 	seg_desc->access |= rw << 1;
 	seg_desc->access |= type << 3;
 	seg_desc->access |= ring << 5;
 }
 
-void gdt_set_segment_borders(struct gdt_segment_desc* seg_desc, uint32_t base_addr, uint32_t limit_addr) {
+void gdt_set_segment_borders(volatile struct gdt_segment_desc* seg_desc, uint32_t base_addr, uint32_t limit_addr) {
 	limit_addr /= PMMF_S;
 	seg_desc->base_low = base_addr & 0xffff;
 	seg_desc->base_mid = (base_addr >> 16) & 0xff;
@@ -20,12 +20,19 @@ void gdt_init() {
 	*((uint32_t*)GDT_BASE) = 0x0;
 	*((uint32_t*)(GDT_BASE+1)) = 0x0;
 
-	volatile struct gdt_segment_desc *kernel_code = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S);
-	volatile struct gdt_segment_desc *kernel_data = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S*2);
-	volatile struct gdt_segment_desc *kernel_stack = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S*3);
-	volatile struct gdt_segment_desc *user_code = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S*4);
-	volatile struct gdt_segment_desc *user_data = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S*5);
-	volatile struct gdt_segment_desc *user_stack = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S*6);
+	uint32_t kernel_code_desc_ptr = GDT_BASE + GDT_D_S;
+	uint32_t kernel_data_desc_ptr = GDT_BASE + GDT_D_S*2;
+	uint32_t kernel_stack_desc_ptr = GDT_BASE + GDT_D_S*3;
+	uint32_t user_code_desc_ptr = GDT_BASE + GDT_D_S*4;
+	uint32_t user_data_desc_ptr = GDT_BASE + GDT_D_S*5;
+	uint32_t user_stack_desc_ptr = GDT_BASE + GDT_D_S*6;
+
+	volatile struct gdt_segment_desc *kernel_code = (struct gdt_segment_desc*)kernel_code_desc_ptr;
+	volatile struct gdt_segment_desc *kernel_data = (struct gdt_segment_desc*)kernel_data_desc_ptr;
+	volatile struct gdt_segment_desc *kernel_stack = (struct gdt_segment_desc*)kernel_stack_desc_ptr;
+	volatile struct gdt_segment_desc *user_code = (struct gdt_segment_desc*)user_code_desc_ptr;
+	volatile struct gdt_segment_desc *user_data = (struct gdt_segment_desc*)user_data_desc_ptr;
+	volatile struct gdt_segment_desc *user_stack = (struct gdt_segment_desc*)user_stack_desc_ptr;
 
 	kernel_code->limit_high_flags = 0b11000000;
 	kernel_data->limit_high_flags = 0b11000000;
@@ -47,4 +54,25 @@ void gdt_init() {
 	gdt_set_segment_access(user_code, GDT_D_CODE, GDT_D_CODE_RX, GDT_D_RING_3);
 	gdt_set_segment_access(user_data, GDT_D_DATA, GDT_D_DATA_RW, GDT_D_RING_3);
 	gdt_set_segment_access(user_stack, GDT_D_DATA, GDT_D_DATA_RW, GDT_D_RING_3);
+
+	struct gdt_register gdtr = {(GDT_D_S * GDT_D_C) - 1, GDT_BASE};
+
+	asm volatile (
+		"lgdt %0\n"
+		: : "m" (gdtr)
+	);
+
+	asm volatile (
+		"mov ds, %w0\n"
+		"mov es, %w0\n"
+		"mov gs, %w0\n"
+		"mov ss, %w1\n"
+		:
+		: "q" (0x10), "q" (0x18)
+	);
+
+	asm volatile (
+		"jmp 0x8:1f\n"
+		"1:\n"
+	);
 }
