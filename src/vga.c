@@ -3,13 +3,13 @@
 // vga(16): bg(4) fg(4) char(8)
 
 void vga_clear_screen() {
-	struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
+	volatile struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
 	for (uint16_t i = 0; i < VGA_SIZE; i++)
 		((uint16_t*)vga_info->base_addr)[i] = (vga_info->cur_bg_color << 4|vga_info->cur_fg_color) << 8|' ';
 }
 
 void vga_enable_cursor() {
-	asm (
+	asm volatile (
 
 		"mov dx, 0x3d4\n"
 		"mov al, 0xa\n"
@@ -31,7 +31,7 @@ void vga_enable_cursor() {
 }
 
 void vga_disable_cursor() {
-	asm (
+	asm volatile (
 		"mov dx, 0x3d4\n"
 		"mov al, 0xa\n"
 		"out dx, al\n"
@@ -42,9 +42,9 @@ void vga_disable_cursor() {
 }
 
 void vga_update_cursor() {
-	struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
+	volatile struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
 	uint16_t cur_cursor = vga_info->cur_cursor_row*VGA_W + vga_info->cur_cursor_col;
-	asm (
+	asm volatile (
 
 		"mov dx, 0x3d4\n"
 		"mov al, 0xe\n"
@@ -78,7 +78,7 @@ void set_vga_bg_color(uint8_t co) {
 }
 
 void vga_putchar(uint8_t ch) {
-	struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
+	volatile struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
 	if (ch == '\n') {
 		vga_info->cur_cursor_col = 0;
 		vga_info->cur_cursor_row += 1;
@@ -129,7 +129,7 @@ void vga_putdword(uint8_t *s, uint32_t dwo) {
 }
 
 void vga_init() {
-	struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
+	volatile struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
 
 	vga_info->base_addr = VGA_MEM;
 	vga_info->cur_bg_color = VGA_BLUE;

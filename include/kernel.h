@@ -21,13 +21,24 @@
 #define _32KB 0x8000
 #define _16KB 0x4000
 #define _08KB 0x2000
-#define _04KB 0x100
+#define _04KB 0x1000
 
 #define PMMF_S _04KB
 #define PMMF_U 1
 #define PMMF_F 0
 
-#define GDT_DEF 0x800
+#define GDT_BASE 0x800
+#define GDT_D_S 8 
+#define GDT_D_RING_0 0b00
+#define GDT_D_RING_1 0b01
+#define GDT_D_RING_2 0b10
+#define GDT_D_RING_3 0b11
+#define GDT_D_CODE 0b1
+#define GDT_D_DATA 0b0
+#define GDT_D_CODE_RO 0b0
+#define GDT_D_CODE_RX 0b1
+#define GDT_D_DATA_RO 0b0
+#define GDT_D_DATA_RW 0b1
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
@@ -43,6 +54,15 @@ extern uint32_t _kernel_start;
 extern uint32_t _kernel_end;
 extern uint64_t _tot_ram_size;
 
+struct gdt_segment_desc {
+	uint16_t limit_low;
+	uint16_t base_low;
+	uint8_t base_mid;
+	uint8_t access;
+	uint8_t limit_high_flags;
+	uint8_t base_high;
+} __attribute__((packed));
+
 // https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#Boot-information-format
 
 struct multiboot_info_st {
@@ -52,12 +72,12 @@ struct multiboot_info_st {
 	uint32_t unrelevant_region[2];
 	uint32_t mods_count;
 	uint32_t mods_addr;
-	uint32_t unrelevant_region2[4]; // 24b
+	uint32_t unrelevant_region2[4];
 	uint32_t mmap_length;
           uint32_t mmap_addr;	
-	uint32_t unrelevant_region3[3]; // 96, 12b
+	uint32_t unrelevant_region3[3];
 	uint32_t boot_loader_name;
-};
+} __attribute__((packed));
 
 struct multiboot_mmap_st {
 	uint32_t size;
@@ -66,13 +86,13 @@ struct multiboot_mmap_st {
 	uint32_t length_low;
 	uint32_t length_high;
 	uint32_t type;
-};
+} __attribute__((packed));
 
 struct pmm_info_st {
 	uint32_t size; 
 	uint32_t frames_count;
 	uint8_t bitmap[];
-};
+} __attribute__((packed));
 
 struct vga_info_st {
 	uint64_t base_addr;
@@ -80,7 +100,7 @@ struct vga_info_st {
 	uint8_t cur_fg_color;
 	uint8_t cur_cursor_row;
 	uint8_t cur_cursor_col;
-};
+} __attribute__((packed));
 
 enum vga_color {
 	VGA_BLACK,
@@ -126,5 +146,7 @@ void pmm_alloc_chunk_eptr(uint32_t, uint32_t);
 void pmm_free_chunk_len(uint32_t, uint32_t);
 void pmm_free_chunk_eptr(uint32_t, uint32_t);
 
+// gdt.c
+void gdt_init();
 
 #endif

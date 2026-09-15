@@ -40,6 +40,8 @@ uint8_t pmm_isused(uint32_t addr) {
 }
 
 void pmm_free_chunk_eptr(uint32_t base_addr, uint32_t eptr) {
+	vga_putdword("\nfree chunk: 0x", base_addr);
+	vga_putdword(" eptr: 0x", eptr);
 	for (; base_addr < eptr; base_addr += PMMF_S)
 		pmm_free(base_addr);
 }

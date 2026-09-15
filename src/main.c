@@ -1,7 +1,7 @@
 #include <kernel.h>
 
 void dump_mb_info(uint32_t mm_ptr) {
-	struct multiboot_info_st *mbd = (struct multiboot_info_st*)mm_ptr;
+	volatile struct multiboot_info_st *mbd = (struct multiboot_info_st*)mm_ptr;
 
 	vga_putdword("\nmultiboot flags: 0x", mbd->flags);
 
@@ -48,14 +48,15 @@ int kmain(uint32_t magic, uint32_t mm_ptr) {
 
 	vga_init();
 
-	(void)magic;
-	//vga_putstr("1337");
+	/*(void)magic;
+	vga_putstr("1337");*/
 
 	vga_putdword("kernel_start: 0x", (uint32_t)&_kernel_start);
 	vga_putdword("\nkernel_end: 0x", (uint32_t)&_kernel_end);
 
-	dump_mb_info(mm_ptr);
+	//dump_mb_info(mm_ptr);
 
+	gdt_init();
 	pmm_init(mm_ptr);
 
 	return 0;
