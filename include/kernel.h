@@ -23,6 +23,8 @@
 #define _08KB 0x2000
 #define _04KB 0x1000
 
+#define KSTACK_S _08KB
+
 #define PMMF_S _04KB
 #define PMMF_U 1
 #define PMMF_F 0

@@ -20,19 +20,12 @@ void gdt_init() {
 	*((uint32_t*)GDT_BASE) = 0x0;
 	*((uint32_t*)(GDT_BASE+1)) = 0x0;
 
-	uint32_t kernel_code_desc_ptr = GDT_BASE + GDT_D_S;
-	uint32_t kernel_data_desc_ptr = GDT_BASE + GDT_D_S*2;
-	uint32_t kernel_stack_desc_ptr = GDT_BASE + GDT_D_S*3;
-	uint32_t user_code_desc_ptr = GDT_BASE + GDT_D_S*4;
-	uint32_t user_data_desc_ptr = GDT_BASE + GDT_D_S*5;
-	uint32_t user_stack_desc_ptr = GDT_BASE + GDT_D_S*6;
-
-	volatile struct gdt_segment_desc *kernel_code = (struct gdt_segment_desc*)kernel_code_desc_ptr;
-	volatile struct gdt_segment_desc *kernel_data = (struct gdt_segment_desc*)kernel_data_desc_ptr;
-	volatile struct gdt_segment_desc *kernel_stack = (struct gdt_segment_desc*)kernel_stack_desc_ptr;
-	volatile struct gdt_segment_desc *user_code = (struct gdt_segment_desc*)user_code_desc_ptr;
-	volatile struct gdt_segment_desc *user_data = (struct gdt_segment_desc*)user_data_desc_ptr;
-	volatile struct gdt_segment_desc *user_stack = (struct gdt_segment_desc*)user_stack_desc_ptr;
+	volatile struct gdt_segment_desc *kernel_code = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S);
+	volatile struct gdt_segment_desc *kernel_data = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S*2);
+	volatile struct gdt_segment_desc *kernel_stack = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S*3);
+	volatile struct gdt_segment_desc *user_code = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S*4);
+	volatile struct gdt_segment_desc *user_data = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S*5);
+	volatile struct gdt_segment_desc *user_stack = (struct gdt_segment_desc*)(GDT_BASE + GDT_D_S*6);
 
 	kernel_code->limit_high_flags = 0b11000000;
 	kernel_data->limit_high_flags = 0b11000000;
@@ -75,4 +68,8 @@ void gdt_init() {
 		"jmp 0x8:1f\n"
 		"1:\n"
 	);
+}
+
+void gdt_dump_seg_descriptors() {
+
 }

@@ -20,6 +20,7 @@ start:
 	mov esp, stack_p
 	push ebx
 	push eax
+	push esp 
 	call kmain
 	hlt
 

@@ -44,15 +44,19 @@ void dump_mb_info(uint32_t mm_ptr) {
 	}
 }
 
-int kmain(uint32_t magic, uint32_t mm_ptr) {
+int kmain(uint32_t st_ptr, uint32_t magic, uint32_t mm_ptr) {
 
 	vga_init();
 
 	/*(void)magic;
 	vga_putstr("1337");*/
+	uint32_t _bootloader_mb_magic = magic;
+	uint32_t _kernel_stack = st_ptr;
 
 	vga_putdword("kernel_start: 0x", (uint32_t)&_kernel_start);
 	vga_putdword("\nkernel_end: 0x", (uint32_t)&_kernel_end);
+	vga_putdword("\nkernel_stack: 0x", st_ptr);
+	vga_putdword("\nbootloader_multiboot_magic: 0x", _bootloader_mb_magic);
 
 	//dump_mb_info(mm_ptr);
 
