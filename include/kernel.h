@@ -55,6 +55,7 @@ typedef long int int64_t;
 
 extern uint32_t _kernel_start;
 extern uint32_t _kernel_end;
+extern uint32_t _kernel_stack;
 extern uint64_t _tot_ram_size;
 
 struct gdt_segment_desc {

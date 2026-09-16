@@ -7,6 +7,7 @@ _8KB	equ 0x2000
 
 global start
 extern kmain
+extern _kernel_stack
 
 section .multiboot
 align 4
@@ -17,13 +18,8 @@ align 4
 section .text
 start:
 	cli
-	mov esp, stack_p
+	mov esp, _kernel_stack
 	push ebx
 	push eax
-	push esp 
 	call kmain
 	hlt
-
-section .bss
-resb _8KB
-stack_p:

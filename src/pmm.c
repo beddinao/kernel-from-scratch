@@ -89,7 +89,7 @@ void pmm_alloc_reserved_kernel() {
 	pmm_alloc_chunk_len((uint32_t)&_kernel_end, pmm_info->size + sizeof(struct pmm_info_st)); // pmm bitmap
 	pmm_alloc_chunk_len(VGA_INFO_ST, sizeof(struct vga_info_st)); // vga info
 	pmm_alloc_chunk_len(GDT_BASE, GDT_D_S * GDT_D_C); // gdt
-	pmm_alloc_chunk_len(_kernel_stack, KSTACK_S);
+	pmm_alloc_chunk_len((uint32_t)&_kernel_stack - KSTACK_S, KSTACK_S);
 }
 
 void pmm_init(uint32_t mm_ptr) {
