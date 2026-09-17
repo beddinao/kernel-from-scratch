@@ -27,7 +27,7 @@ void gdt_dump_seg_registers() {
 		: "m" (cs), "m" (ds), "m" (ss) 
 	);
 
-	vga_putstr("\nsegment registers: ");
+	vga_putstr("\nsegment_registers: ");
 	vga_putword(" cs: 0x", cs);
 	vga_putword(" ds: 0x", ds);
 	vga_putword(" ss: 0x", ss);
@@ -40,12 +40,8 @@ void gdt_dump_seg_descriptors() {
 	uint32_t *kernel_data_high = kernel_data_low + 1;
 
 	vga_putdword("\ngdt_base: 0x", GDT_BASE);
-
-	vga_putdword("\ngdt_desc1 (kernel_code): 0x", *kernel_code_high);
-	vga_putdword("", *kernel_code_low);
-
-	vga_putdword("\ngdt_desc2 (kernel_data): 0x", *kernel_data_high);
-	vga_putdword("", *kernel_data_low);
+	vga_putdword("\ngdt_desc1 (kernel_code): 0x", *kernel_code_high); vga_putdword("", *kernel_code_low);
+	vga_putdword("\ngdt_desc2 (kernel_data): 0x", *kernel_data_high); vga_putdword("", *kernel_data_low);
 }
 
 void gdt_init() {
@@ -73,12 +69,12 @@ void gdt_init() {
 	gdt_set_segment_borders(user_data, 0x00000000, 0xffffffff);
 	gdt_set_segment_borders(user_stack, 0x00000000, 0xffffffff);
 
-	gdt_set_segment_access(kernel_code, GDT_D_CODE, GDT_D_CODE_RX, GDT_D_RING_0);
-	gdt_set_segment_access(kernel_data, GDT_D_DATA, GDT_D_DATA_RW, GDT_D_RING_0);
-	gdt_set_segment_access(kernel_stack, GDT_D_DATA, GDT_D_DATA_RW, GDT_D_RING_0);
-	gdt_set_segment_access(user_code, GDT_D_CODE, GDT_D_CODE_RX, GDT_D_RING_3);
-	gdt_set_segment_access(user_data, GDT_D_DATA, GDT_D_DATA_RW, GDT_D_RING_3);
-	gdt_set_segment_access(user_stack, GDT_D_DATA, GDT_D_DATA_RW, GDT_D_RING_3);
+	gdt_set_segment_access(kernel_code, GDT_D_CODE, GDT_D_CODE_RX, RING_0);
+	gdt_set_segment_access(kernel_data, GDT_D_DATA, GDT_D_DATA_RW, RING_0);
+	gdt_set_segment_access(kernel_stack, GDT_D_DATA, GDT_D_DATA_RW, RING_0);
+	gdt_set_segment_access(user_code, GDT_D_CODE, GDT_D_CODE_RX, RING_3);
+	gdt_set_segment_access(user_data, GDT_D_DATA, GDT_D_DATA_RW, RING_3);
+	gdt_set_segment_access(user_stack, GDT_D_DATA, GDT_D_DATA_RW, RING_3);
 
 	struct gdt_register gdtr = {(GDT_D_S * GDT_D_C) - 1, GDT_BASE};
 

@@ -59,7 +59,9 @@ int kmain(uint32_t _bootloader_mb_magic, uint32_t mm_ptr) {
 
 	//dump_mb_info(mm_ptr);
 
-	gdt_init();
 	pmm_init(mm_ptr);
+	gdt_init();
+	idt_init();
+
 	return 0;
 }

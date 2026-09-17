@@ -29,19 +29,24 @@
 #define PMMF_U 1
 #define PMMF_F 0
 
+#define RING_0 0b00
+#define RING_1 0b01
+#define RING_2 0b10
+#define RING_3 0b11
+
 #define GDT_BASE 0x800
 #define GDT_D_S 8
 #define GDT_D_C 7
-#define GDT_D_RING_0 0b00
-#define GDT_D_RING_1 0b01
-#define GDT_D_RING_2 0b10
-#define GDT_D_RING_3 0b11
 #define GDT_D_CODE 0b1
 #define GDT_D_DATA 0b0
 #define GDT_D_CODE_RO 0b0
 #define GDT_D_CODE_RX 0b1
 #define GDT_D_DATA_RO 0b0
 #define GDT_D_DATA_RW 0b1
+
+#define IDT_D_S 8
+#define IDT_D_C 0xff
+#define IDT_SIZE IDT_D_S*IDT_D_C
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
@@ -58,6 +63,24 @@ extern uint32_t _kernel_end;
 extern uint32_t _kernel_stack;
 extern uint64_t _tot_ram_size;
 
+struct idt_register {
+	uint16_t size;
+	uint32_t idt_addr;
+} __attribute__((packed));
+
+struct idt_gate_desc {
+	uint16_t offset_low;
+	uint8_t gdt_seg_selec;
+	uint8_t reserved;
+	uint16_t type_attr;
+	uint16_t offset_high;
+} __attribute__((packed));
+
+struct gdt_register {
+	uint16_t size;
+	uint32_t gdt_addr;
+} __attribute__((packed));
+
 struct gdt_segment_desc {
 	uint16_t limit_low;
 	uint16_t base_low;
@@ -65,11 +88,6 @@ struct gdt_segment_desc {
 	uint8_t access;
 	uint8_t limit_high_flags;
 	uint8_t base_high;
-} __attribute__((packed));
-
-struct gdt_register {
-	uint16_t size;
-	uint32_t gdt_addr;
 } __attribute__((packed));
 
 // https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#Boot-information-format
@@ -157,5 +175,9 @@ void pmm_free_chunk_eptr(uint32_t, uint32_t);
 
 // gdt.c
 void gdt_init();
+
+// idt.c
+void idt_init();
+uint8_t *idt_perm_offset();
 
 #endif

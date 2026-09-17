@@ -88,7 +88,8 @@ void pmm_alloc_reserved_kernel() {
 	pmm_alloc_chunk_len((uint32_t)&_kernel_end, pmm_info->size + sizeof(struct pmm_info_st)); // pmm bitmap
 	pmm_alloc_chunk_len(VGA_INFO_ST, sizeof(struct vga_info_st)); // vga info
 	pmm_alloc_chunk_len(GDT_BASE, GDT_D_S * GDT_D_C); // gdt
-	pmm_alloc_chunk_len((uint32_t)&_kernel_stack - KSTACK_S, KSTACK_S);
+	//pmm_alloc_chunk_len((uint32_t)&_kernel_stack - KSTACK_S, KSTACK_S); 
+	pmm_alloc_chunk_len((uint32_t)(pmm_info->bitmap + pmm_info->size), IDT_SIZE); // future idt
 }
 
 void pmm_putinfo() {
@@ -96,6 +97,7 @@ void pmm_putinfo() {
 	vga_putdword("\npmm_base_addr: 0x", (uint32_t)&pmm_info->bitmap);
 	vga_putdword("\npmm_frames_count: 0x", pmm_info->frames_count);
 	vga_putdword("\npmm_size: 0x", pmm_info->size);
+	vga_putdword("\npmm_end_addr: 0x", (uint32_t)(pmm_info->bitmap + pmm_info->size));
 }
 
 void pmm_init(uint32_t mm_ptr) {
