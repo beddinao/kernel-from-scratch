@@ -40,8 +40,8 @@ uint8_t pmm_isused(uint32_t addr) {
 }
 
 void pmm_free_chunk_eptr(uint32_t base_addr, uint32_t eptr) {
-	vga_putdword("\nfree chunk: 0x", base_addr);
-	vga_putdword(" eptr: 0x", eptr);
+	//vga_putdword("\nfree chunk: 0x", base_addr);
+	//vga_putdword(" eptr: 0x", eptr);
 	for (; base_addr < eptr; base_addr += PMMF_S)
 		pmm_free(base_addr);
 }
@@ -51,8 +51,8 @@ void pmm_free_chunk_len(uint32_t base_addr, uint32_t length) {
 }
 
 void pmm_alloc_chunk_eptr(uint32_t base_addr, uint32_t eptr) {
-	vga_putdword("\nalloc_chunk: 0x", base_addr);
-	vga_putdword(" eptr: 0x", eptr);
+	//vga_putdword("\nalloc_chunk: 0x", base_addr);
+	//vga_putdword(" eptr: 0x", eptr);
 	for (; base_addr < eptr; base_addr += PMMF_S)
 		pmm_alloc_frame(base_addr);
 }
@@ -63,7 +63,6 @@ void pmm_alloc_chunk_len(uint32_t base_addr, uint32_t length) {
 
 void pmm_dump_mmap(uint32_t sidx, uint32_t eidx) {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
-
 	vga_putdword("\npmm_mmap frames dump from 0x", sidx);
 	vga_putdword(" to 0x", eidx);
 	vga_putstr(": ");
@@ -92,6 +91,13 @@ void pmm_alloc_reserved_kernel() {
 	pmm_alloc_chunk_len((uint32_t)&_kernel_stack - KSTACK_S, KSTACK_S);
 }
 
+void pmm_putinfo() {
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	vga_putdword("\npmm_base_addr: 0x", (uint32_t)&pmm_info->bitmap);
+	vga_putdword("\npmm_frames_count: 0x", pmm_info->frames_count);
+	vga_putdword("\npmm_size: 0x", pmm_info->size);
+}
+
 void pmm_init(uint32_t mm_ptr) {
 	struct multiboot_info_st *mbis = (struct multiboot_info_st*)mm_ptr;
 	uint8_t *mb_mmap_ptr = (uint8_t*)mbis->mmap_addr;
@@ -102,9 +108,7 @@ void pmm_init(uint32_t mm_ptr) {
 	pmm_info->frames_count = 0xffffffff / PMMF_S;
 	pmm_info->size = pmm_info->frames_count / 8;
 
-	vga_putdword("\npmm_base_addr: 0x", (uint32_t)&pmm_info->bitmap);
-	vga_putdword("\npmm_frames_count: 0x", pmm_info->frames_count);
-	vga_putdword("\npmm_size: 0x", pmm_info->size);
+	pmm_putinfo();
 
 	for (uint32_t idx = 0; idx < pmm_info->size; idx++)
 		pmm_info->bitmap[ idx ] = 0xff;

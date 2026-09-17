@@ -16,6 +16,38 @@ void gdt_set_segment_borders(volatile struct gdt_segment_desc* seg_desc, uint32_
 	seg_desc->limit_high_flags = seg_desc->limit_high_flags & 0xf0 | (limit_addr >> 16) & 0xf;
 }
 
+void gdt_dump_seg_registers() {
+	uint16_t cs, ds, ss;
+
+	asm volatile (
+		"mov %0, cs\n"
+		"mov %1, ds\n"
+		"mov %2, ss\n"
+		:
+		: "m" (cs), "m" (ds), "m" (ss) 
+	);
+
+	vga_putstr("\nsegment registers: ");
+	vga_putword(" cs: 0x", cs);
+	vga_putword(" ds: 0x", ds);
+	vga_putword(" ss: 0x", ss);
+}
+
+void gdt_dump_seg_descriptors() {
+	uint32_t *kernel_code_low = (uint32_t*)GDT_BASE + 2;
+	uint32_t *kernel_code_high = kernel_code_low + 1;
+	uint32_t *kernel_data_low = (uint32_t*)GDT_BASE + 4;
+	uint32_t *kernel_data_high = kernel_data_low + 1;
+
+	vga_putdword("\ngdt_base: 0x", GDT_BASE);
+
+	vga_putdword("\ngdt_desc1 (kernel_code): 0x", *kernel_code_high);
+	vga_putdword("", *kernel_code_low);
+
+	vga_putdword("\ngdt_desc2 (kernel_data): 0x", *kernel_data_high);
+	vga_putdword("", *kernel_data_low);
+}
+
 void gdt_init() {
 	*((uint32_t*)GDT_BASE) = 0x0;
 	*((uint32_t*)(GDT_BASE+1)) = 0x0;
@@ -68,8 +100,7 @@ void gdt_init() {
 		"jmp 0x8:1f\n"
 		"1:\n"
 	);
-}
 
-void gdt_dump_seg_descriptors() {
-
+	gdt_dump_seg_descriptors();
+	gdt_dump_seg_registers();
 }
