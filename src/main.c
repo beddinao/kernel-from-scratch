@@ -18,14 +18,13 @@ void dump_mb_info(uint32_t mm_ptr) {
 		uint8_t *ptr = (uint8_t*)mbd->mmap_addr;
 		uint8_t *eptr = ptr + mbd->mmap_length;
 		struct multiboot_mmap_st* mb_mmap;
-		uint64_t _tot_ram_size = 0;
 
 		for (; ptr < eptr;) {
 
 			mb_mmap = (struct multiboot_mmap_st*)ptr;
 
-			_tot_ram_size += mb_mmap->length_high << 32 | mb_mmap->length_low;
-
+			//_tot_ram_size += mb_mmap->length_high << 32 | mb_mmap->length_low;
+			
 			vga_putdword("st: 0x", mb_mmap->base_addr_low);
 			vga_putdword(" len: 0x", mb_mmap->length_low);
 			vga_putdword(" t: 0x", mb_mmap->type);
@@ -34,8 +33,8 @@ void dump_mb_info(uint32_t mm_ptr) {
 			vga_putchar('\n');
 		}
 
-		vga_putdword("total ram size: 0x", _tot_ram_size >> 32);
-		vga_putdword("", _tot_ram_size & 0xffffffff);
+		//vga_putdword("total ram size: 0x", _tot_ram_size >> 32);
+		//vga_putdword("", _tot_ram_size & 0xffffffff);
 	}
 
 	if ((mbd->flags >> 3) & 1) {

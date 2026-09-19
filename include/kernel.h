@@ -45,7 +45,7 @@
 #define GDT_D_DATA_RW 0b1
 
 #define IDT_D_S 8
-#define IDT_D_C 0xff
+#define IDT_D_C 256 
 #define IDT_SIZE IDT_D_S*IDT_D_C
 
 typedef unsigned char uint8_t;
@@ -61,7 +61,6 @@ typedef long int int64_t;
 extern uint32_t _kernel_start;
 extern uint32_t _kernel_end;
 extern uint32_t _kernel_stack;
-extern uint64_t _tot_ram_size;
 
 struct idt_register {
 	uint16_t size;
@@ -70,9 +69,9 @@ struct idt_register {
 
 struct idt_gate_desc {
 	uint16_t offset_low;
-	uint8_t gdt_seg_selec;
+	uint16_t gdt_seg_selec;
 	uint8_t reserved;
-	uint16_t type_attr;
+	uint8_t type_attr;
 	uint16_t offset_high;
 } __attribute__((packed));
 
