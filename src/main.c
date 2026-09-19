@@ -62,5 +62,9 @@ int kmain(uint32_t _bootloader_mb_magic, uint32_t mm_ptr) {
 	gdt_init();
 	idt_init();
 
+	while (1) {
+	        asm volatile ("hlt");
+	}
+
 	return 0;
 }

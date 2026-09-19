@@ -163,7 +163,7 @@ void vga_clear_screen();
 
 // pmm.c
 void pmm_init(uint32_t);
-void pmm_free();
+void pmm_free(uint32_t);
 uint32_t pmm_alloc();
 uint8_t pmm_isused(uint32_t);
 void pmm_alloc_frame(uint32_t);
