@@ -126,6 +126,7 @@ struct vga_info_st {
 	uint32_t base_addr;
 	uint8_t shell_enable;
 	uint8_t cur_line[VGA_W+1];
+	uint8_t cur_cmd_line_char;
 	uint8_t cur_bg_color;
 	uint8_t cur_fg_color;
 	uint8_t cur_cursor_row;
@@ -155,6 +156,7 @@ enum vga_color {
 void vga_init();
 void vga_putchar(uint8_t);
 void vga_putstr(uint8_t*);
+void vga_putstrlen(uint8_t*, uint8_t);
 void vga_puthexnm(uint8_t);
 void vga_putword(uint8_t*, uint16_t);
 void vga_putdword(uint8_t*, uint32_t);
@@ -186,8 +188,9 @@ uint8_t *idt_perm_offset();
 // string.c
 void kmemset(volatile uint8_t*, uint32_t);
 uint8_t kstrcmp(uint8_t*, uint8_t*);
+uint16_t kstrlen(uint8_t*);
 
 // shell.c
-void kshell(uint8_t *, uint32_t);
+void kshell(uint8_t *, struct vga_info_st*);
 
 #endif
