@@ -29,7 +29,7 @@ struct interrupt_frame {
 // Posted by jonathan
 // Retrieved 2026-09-19, License - CC BY-SA 4.0
 
-char kbd_US [128] =
+uint8_t kbd_US [128] =
 {
 	0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
 	'\t', /* <-- Tab */

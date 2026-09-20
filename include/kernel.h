@@ -122,7 +122,7 @@ struct pmm_info_st {
 
 struct vga_info_st {
 	uint32_t base_addr;
-	uint8_t cur_line[VGA_W];
+	uint8_t cur_line[VGA_W+1];
 	uint8_t cur_bg_color;
 	uint8_t cur_fg_color;
 	uint8_t cur_cursor_row;
@@ -179,5 +179,8 @@ void gdt_init();
 // idt.c
 void idt_init();
 uint8_t *idt_perm_offset();
+
+// string.c
+void kmemset(volatile uint8_t*, uint32_t);
 
 #endif

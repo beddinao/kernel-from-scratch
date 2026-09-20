@@ -82,17 +82,22 @@ void vga_putchar(uint8_t ch) {
 	if (ch == '\n') {
 		vga_info->cur_cursor_col = 0;
 		vga_info->cur_cursor_row += 1;
+		kmemset(vga_info->cur_line, sizeof(vga_info->cur_line));
 	}
 	else {
 		uint16_t cur_cursor = vga_info->cur_cursor_row*VGA_W + vga_info->cur_cursor_col;
 		((uint16_t*)vga_info->base_addr)[ cur_cursor ] = (vga_info->cur_bg_color << 4|vga_info->cur_fg_color) << 8|ch;
+		vga_info->cur_line[vga_info->cur_cursor_col] = ch;
 		vga_info->cur_cursor_col += 1;
 		if (vga_info->cur_cursor_col > VGA_W) {
 			vga_info->cur_cursor_col = 0;
 			vga_info->cur_cursor_row += 1;
+			//vga_putstr(vga_info->cur_line);
+			kmemset(vga_info->cur_line, sizeof(vga_info->cur_line));
 		}
 	}
 	if (vga_info->cur_cursor_row > VGA_H) {
+		kmemset(vga_info->cur_line, sizeof(vga_info->cur_line));
 		vga_info->cur_cursor_row = 0;
 		vga_clear_screen();
 	}
@@ -136,7 +141,7 @@ void vga_init() {
 	vga_info->cur_fg_color = VGA_WHITE;
 	vga_info->cur_cursor_col = VGA_INIT_CURSOR_COL;
 	vga_info->cur_cursor_row = VGA_INIT_CURSOR_ROW;
-	vga_info->cur_line = 0;
+	kmemset(vga_info->cur_line, sizeof(vga_info->cur_line));
 
 	vga_clear_screen();
 	vga_enable_cursor();
