@@ -7,6 +7,11 @@ global isr_dummy_ec
 global isr_dummy
 
 section .text
+
+print_test:
+	mov word [0xb8000], 0b010000000100100
+	mov word [0xb8002], 0b010000000100101
+
 single_interrupt_wrapper:
 	pushad
 	push esp
@@ -41,13 +46,14 @@ isr_systimer:
 isr_keyboard:
 	push dword 0
 	push dword 33
+	call print_test
 	jmp single_interrupt_wrapper
 
 isr_dummy:
-	push dword 0
+	push dword 1
 	jmp single_interrupt_wrapper
 
 isr_dummy_ec:
 	push dword 0
-	push dword 0
+	push dword 2
 	jmp single_interrupt_wrapper

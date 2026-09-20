@@ -35,7 +35,7 @@ build/%.o: src/%.asm
 	$(AS) $(ASFLAGS) $< -o $@ 
 
 run:
-	qemu-system-i386 -m 128M -display gtk,zoom-to-fit=on -cdrom $(ISO_NAME) #-full-screen
+	qemu-system-i386 -m 128M -cdrom $(ISO_NAME) #-full-screen
 
 clean:
 	rm -rf build iso
