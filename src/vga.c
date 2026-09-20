@@ -77,29 +77,33 @@ void set_vga_bg_color(uint8_t co) {
 	((struct vga_info_st*)VGA_INFO_ST)->cur_bg_color = co;
 }
 
+void vga_newline(volatile struct vga_info_st *vga_info) {
+        vga_info->cur_cursor_col = 0;
+        vga_info->cur_cursor_row += 1;
+        if (vga_info->shell_enable) {
+	      vga_info->shell_enable = 0;
+	      kshell(vga_info->cur_line, sizeof(vga_info->cur_line));
+	      vga_info->shell_enable = 1;
+        }
+        kmemset(vga_info->cur_line, sizeof(vga_info->cur_line));
+        if (vga_info->cur_cursor_row > VGA_H) {
+	      vga_info->cur_cursor_row = 0;
+	      vga_clear_screen();
+        }
+}
+
 void vga_putchar(uint8_t ch) {
 	volatile struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
-	if (ch == '\n') {
-		vga_info->cur_cursor_col = 0;
-		vga_info->cur_cursor_row += 1;
-		kmemset(vga_info->cur_line, sizeof(vga_info->cur_line));
-	}
+	if (ch == '\n')
+		vga_newline(vga_info);
 	else {
 		uint16_t cur_cursor = vga_info->cur_cursor_row*VGA_W + vga_info->cur_cursor_col;
 		((uint16_t*)vga_info->base_addr)[ cur_cursor ] = (vga_info->cur_bg_color << 4|vga_info->cur_fg_color) << 8|ch;
-		vga_info->cur_line[vga_info->cur_cursor_col] = ch;
+		if (vga_info->shell_enable)
+			vga_info->cur_line[vga_info->cur_cursor_col] = ch;
 		vga_info->cur_cursor_col += 1;
-		if (vga_info->cur_cursor_col > VGA_W) {
-			vga_info->cur_cursor_col = 0;
-			vga_info->cur_cursor_row += 1;
-			//vga_putstr(vga_info->cur_line);
-			kmemset(vga_info->cur_line, sizeof(vga_info->cur_line));
-		}
-	}
-	if (vga_info->cur_cursor_row > VGA_H) {
-		kmemset(vga_info->cur_line, sizeof(vga_info->cur_line));
-		vga_info->cur_cursor_row = 0;
-		vga_clear_screen();
+		if (vga_info->cur_cursor_col > VGA_W)
+			vga_newline(vga_info);	
 	}
 }
 
@@ -141,6 +145,7 @@ void vga_init() {
 	vga_info->cur_fg_color = VGA_WHITE;
 	vga_info->cur_cursor_col = VGA_INIT_CURSOR_COL;
 	vga_info->cur_cursor_row = VGA_INIT_CURSOR_ROW;
+	vga_info->shell_enable = 0;
 	kmemset(vga_info->cur_line, sizeof(vga_info->cur_line));
 
 	vga_clear_screen();
