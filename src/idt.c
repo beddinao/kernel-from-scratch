@@ -66,10 +66,9 @@ char kbd_US [128] =
 
 
 void isr_global_interrupt_handler(struct interrupt_frame* frame) {
-	vga_putword("INT: 0x", frame->interrupt_number);
+	uint8_t scancode;
 	switch (frame->interrupt_number) {
 		case 33:
-			uint8_t scancode;
 			asm volatile (
 					"in al, 0x60\n"
 					: "=a" (scancode)
@@ -79,9 +78,9 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 				vga_update_cursor();
 			}
 			break;
-		case 32:
+		/*case 32:
 			vga_putstr("systimer_interrupt\n");
-			break;
+			break;*/
 		case 0x0:
 			vga_putstr("division_per_zero_interrupt\n");
 			break;
@@ -91,12 +90,12 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 		case 14:
 			vga_putstr("page_fault_exception\n");
 			break;
-		case 1:
+		/*case 1:
 			vga_putstr("dummy_interrupt_handler\n");
 			break;
 		case 2:
 			vga_putstr("dummy_ec_interrupt_handler\n");
-			break;
+			break;*/
 	}
 
 	if (frame->interrupt_number >= 32 && frame->interrupt_number <= 39) {
@@ -127,9 +126,8 @@ void pic_remap(void) {
 			"out 0x21, al\n"
 			"out 0xA1, al\n"
 
-			"mov al, 0x01\n"
-			"out 0x21, al\n"
 			"mov al, 0x00\n"
+			"out 0x21, al\n"
 			"out 0xA1, al\n"
 			::: "al" 
 			);

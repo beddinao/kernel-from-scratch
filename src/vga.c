@@ -136,6 +136,7 @@ void vga_init() {
 	vga_info->cur_fg_color = VGA_WHITE;
 	vga_info->cur_cursor_col = VGA_INIT_CURSOR_COL;
 	vga_info->cur_cursor_row = VGA_INIT_CURSOR_ROW;
+	vga_info->cur_line = 0;
 
 	vga_clear_screen();
 	vga_enable_cursor();

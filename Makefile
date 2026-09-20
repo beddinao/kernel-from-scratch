@@ -21,7 +21,7 @@ $(ISO_NAME): $(KERNEL_BIN)
 	mkdir -p iso/boot/grub
 	cp $(KERNEL_BIN) iso/boot/
 	cp grub.cfg iso/boot/grub/
-	grub-mkrescue -o $(ISO_NAME) iso
+	grub-mkrescue -d /goinfre/beddinao/i386-pc/usr/lib/grub/i386-pc -v -o $(ISO_NAME) iso
 
 $(KERNEL_BIN): $(OBJS)
 	ld $(LDFLAGS) -o $(KERNEL_BIN) $(OBJS)
@@ -35,7 +35,7 @@ build/%.o: src/%.asm
 	$(AS) $(ASFLAGS) $< -o $@ 
 
 run:
-	qemu-system-i386 -m 128M -cdrom $(ISO_NAME) #-full-screen
+	qemu-system-i386 -m 128M -cdrom $(ISO_NAME) -display gtk,zoom-to-fit=on
 
 clean:
 	rm -rf build iso

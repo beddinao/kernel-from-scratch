@@ -46,7 +46,7 @@ isr_systimer:
 isr_keyboard:
 	push dword 0
 	push dword 33
-	call print_test
+	;call print_test
 	jmp single_interrupt_wrapper
 
 isr_dummy:

@@ -121,7 +121,8 @@ struct pmm_info_st {
 } __attribute__((packed));
 
 struct vga_info_st {
-	uint64_t base_addr;
+	uint32_t base_addr;
+	uint8_t cur_line[VGA_W];
 	uint8_t cur_bg_color;
 	uint8_t cur_fg_color;
 	uint8_t cur_cursor_row;
