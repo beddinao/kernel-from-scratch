@@ -4,9 +4,9 @@
 
 void vga_clear_screen(uint8_t ch) {
 	struct vga_info_st* vga_info = (struct vga_info_st*)VGA_INFO_ST;
-	uint16_t *screen = (uint16_t*)vga_info->_sc[vga_info->attr & 0b11].base_addr;
+	uint16_t *screen_buff = (uint16_t*)vga_info->_sc[vga_info->attr & 0b11].base_addr;
 	for (uint16_t i = 0; i < VGA_SIZE; i++) 
-		screen[i] = vga_info->_sc[vga_info->attr & 0b11]._color << 8 | (ch? ch: screen[i]&0xff);
+		screen_buff[i] = vga_info->_sc[vga_info->attr & 0b11]._color << 8 | (ch? ch: screen_buff[i]&0xff);
 }
 
 void vga_enable_cursor() {
@@ -80,85 +80,107 @@ void vga_set_bg_color(uint8_t co) {
 }
 
 void vga_clear_line(volatile struct vga_info_st* vga_info) {
-	struct vga_screen_st *screen = vga_info->_sc[vga_info->attr & 0b11];
+	struct vga_screen_st *screen = &(vga_info->_sc[vga_info->attr & 0b11]);
 	for (uint8_t cur_col = 0; cur_col < VGA_W; cur_col++)
 		((uint16_t*)screen->base_addr)[ ((screen->_cursor >> 8) & 0xff) * VGA_W + cur_col ] = screen->_color << 8 | ' ';
 }
 
 void vga_reset_screen() {
 	struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
-	struct vga_screen_st *screen = vga_info->_sc[ vga_info->attr & 0b11 ];
+	struct vga_screen_st *screen = &(vga_info->_sc[ vga_info->attr & 0b11 ]);
 
 	vga_clear_screen(' ');
 
 	screen->_cursor = VGA_INIT_CURSOR_ROW << 8 | VGA_INIT_CURSOR_COL;
 
-	screen->cmd_line_idx = 0
+	screen->cmd_line_idx = 0;
 	kmemset(screen->cmd_line, sizeof(screen->cmd_line));
 }
 
 void vga_scroll(volatile struct vga_info_st* vga_info) {
-	struct vga_screen_st *screen = vga_info->_sc[ vga_info->attr & 0b11 ];
+	struct vga_screen_st *screen = &(vga_info->_sc[ vga_info->attr & 0b11 ]);
 
-	screen->_cursor &= 0b11110000;
 	//vga_info->_cursor_col = 0;
-	screen->_cursor = ((screen->color >> 4)-1) << 4 | color & 0b1111;
+	screen->_cursor &= 0b11110000;
+
 	//vga_info->_cursor_row -= 1;
-	vga_info->attr &= ~(1 << 4);
+	screen->_cursor = ((screen->_cursor >> 8)-1) << 8 | screen->_cursor & 0xff;
+
 	//vga_info->shell_enable = 0;
+	vga_info->attr &= ~(1 << 4);
 	
 	for (uint8_t cur_row = 0; cur_row < VGA_H; cur_row++) {
 		for (uint8_t i = 0; i < VGA_W; i++) {
 			uint16_t idx = cur_row * VGA_W +i;
-			((uint16_t*)vga_info->base_addr)[idx] = ((uint16_t*)vga_info->base_addr)[idx+VGA_W];
+			((uint16_t*)screen->base_addr)[idx] = ((uint16_t*)screen->base_addr)[idx+VGA_W];
 		}
 	}
+
 	vga_clear_line(vga_info);
 	vga_putstr(SHELL_PROMPT);
-	vga_info->shell_enable = 1;
+	//vga_info->shell_enable = 1;
+	vga_info->attr |= (1 << 4);
 }
 
 void vga_putchar(uint8_t ch) {
 	volatile struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
+	struct vga_screen_st *screen = &(vga_info->_sc[ vga_info->attr & 0b11 ]);
+
 	uint16_t cur_cursor;
 	uint8_t line_start = 0;
 	switch (ch) {
 		case 0:
 			return;
 		case NEWLINE_SK:
-			vga_info->_cursor_col = 0;
-			vga_info->_cursor_row += 1;
-			if (vga_info->shell_enable) {
-				vga_info->shell_enable = 0;
-				kshell(vga_info->cmd_line, vga_info);
-				vga_info->shell_enable = 1;
+			//vga_info->_cursor_col = 0;
+			screen->_cursor &= 0xff00;
+			//vga_info->_cursor_row += 1;
+			screen->_cursor = ((screen->_cursor >> 8)+1) << 8 | screen->_cursor & 0xff;
+
+			if ((vga_info->attr >> 4) & 1) {
+				//vga_info->shell_enable = 0;
+				vga_info->attr &= ~(1 << 4);
+				kshell(screen->cmd_line, vga_info);
+				//vga_info->shell_enable = 1;
+				vga_info->attr |= (1 << 4);
 			}
-			kmemset(vga_info->cmd_line, sizeof(vga_info->cmd_line));
-			vga_info->cmd_line_idx = 0;
-			if (vga_info->_cursor_row >= VGA_H) 
+			kmemset(screen->cmd_line, sizeof(screen->cmd_line));
+			screen->cmd_line_idx = 0;
+			if ((screen->_cursor >> 8) & 0xff >= VGA_H)
 				vga_scroll(vga_info);
 			break;
 		case BACKSPACE_SK:
-			if (vga_info->shell_enable)
+			if ((vga_info->attr >> 4) & 1)
 				line_start = kstrlen(SHELL_PROMPT);
-			if (vga_info->_cursor_col == line_start)
+			if (screen->_cursor & 0xff == line_start)
 				break;
-			vga_info->_cursor_col -= 1;
-			cur_cursor = vga_info->_cursor_row*VGA_W + vga_info->_cursor_col;
-			((uint16_t*)vga_info->base_addr)[ cur_cursor ] = (vga_info->_bg_color<<4|vga_info->_fg_color)<<8|' ';
-			if (vga_info->cmd_line_idx) vga_info->cmd_line_idx -= 1;
-			vga_info->cmd_line[vga_info->cmd_line_idx] = 0;
+			//vga_info->_cursor_col -= 1;
+			screen->_cursor = (screen->_cursor & 0xff00) | (screen->_cursor & 0xff) - 1;
+
+			cur_cursor = ((screen->_cursor&0xff00)>>8) * VGA_W + (screen->_cursor&0xff);
+
+			((uint16_t*)screen->base_addr)[ cur_cursor ] = screen->_color<<8|' ';
+
+			if (screen->cmd_line_idx) screen->cmd_line_idx -= 1;
+			screen->cmd_line[screen->cmd_line_idx] = 0;
 			vga_update_cursor();
 			break;
 		default:
-			cur_cursor = vga_info->_cursor_row*VGA_W + vga_info->_cursor_col;
-			ch = vga_info->shell_ctrl ? (ch-32) : ch;
-			((uint16_t*)vga_info->base_addr)[ cur_cursor ] = (vga_info->_bg_color<<4|vga_info->_fg_color)<<8|ch;
-			if (vga_info->shell_enable)
-				vga_info->cmd_line[vga_info->cmd_line_idx++] = ch;
-			vga_info->_cursor_col += 1;
-			if (vga_info->_cursor_col > VGA_W)
+			cur_cursor = ((screen->_cursor&0xff00) >> 8)*VGA_W + (screen->_cursor&0xff);
+
+			ch = ((vga_info->attr >> 3) & 1) ? (ch-32) : ch;
+
+			((uint16_t*)screen->base_addr)[ cur_cursor ] = screen->_color<<8|ch;
+
+			if ((vga_info->attr >> 4) & 1)
+				screen->cmd_line[screen->cmd_line_idx++] = ch;
+
+			//vga_info->_cursor_col += 1;
+			screen->_cursor = (screen->_cursor & 0xff00) | (screen->_cursor & 0xff) + 1;
+
+			if ((screen->_cursor & 0xff) > VGA_W)
 				vga_putchar(NEWLINE_SK);
+
 			break;
 	}
 }
@@ -204,12 +226,14 @@ void vga_init() {
 		vga_info->attr = i;
 
 		vga_info->_sc[i].base_addr = VGA_MEM;
-		vga_info->_sc[i]._bg_color = VGA_BLUE;
-		vga_info->_sc[i]._fg_color = VGA_WHITE;
+		vga_info->_sc[i]._color = VGA_BLUE << 4|VGA_WHITE;
+
+		kmemset(vga_info->_sc[i].cmd_line, sizeof(vga_info->_sc[i].cmd_line));
+		vga_info->_sc[i].cmd_line_idx = 0;
 
 		vga_reset_screen();
 		vga_enable_cursor();
 	}
 
-	vga_info->_attr = 0; // shell,ctrl off, screen 0
+	vga_info->attr = 0; // shell,ctrl off, screen 0
 }

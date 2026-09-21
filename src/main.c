@@ -63,7 +63,7 @@ int kmain(uint32_t _bootloader_mb_magic, uint32_t mm_ptr) {
 	idt_init();
 
 	volatile struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
-	vga_info->shell_enable = 1;
+	vga_info->attr |= (1 << 4);
 
 	while (1) {
 	        asm volatile ("hlt");

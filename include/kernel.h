@@ -137,7 +137,7 @@ struct vga_screen_st {
 } __attribute__((packed));
 
 struct vga_info_st {
-	struct vga_screen_st _scr[0b11];
+	struct vga_screen_st _sc[0b11];
 	uint8_t attr; // shell_on(4) _ctrl(3) _screen(0-2)
 } __attribute__((packed));
 
