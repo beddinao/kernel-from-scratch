@@ -16,3 +16,10 @@ uint16_t kstrlen(uint8_t *str) {
 	      len++;
         return len;
 }
+
+uint32_t ktonum(uint8_t *str) {
+	uint32_t nm = 0;
+	for (; *str >= '0' && *str <= '9'; str++) 
+		nm = nm*10 + (*str-'0');
+	return nm;
+}

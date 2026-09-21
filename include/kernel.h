@@ -192,6 +192,7 @@ uint8_t *idt_perm_offset();
 void kmemset(volatile uint8_t*, uint32_t);
 uint8_t kstrcmp(uint8_t*, uint8_t*);
 uint16_t kstrlen(uint8_t*);
+uint32_t ktonum(uint8_t*);
 
 // shell.c
 void kshell(uint8_t *, struct vga_info_st*);
