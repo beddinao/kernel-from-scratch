@@ -50,11 +50,11 @@ int kmain(uint32_t _bootloader_mb_magic, uint32_t mm_ptr) {
 	/*(void)magic;
 	vga_putstr("1337");*/
 
-	vga_putdword("kernel_start: 0x", (uint32_t)&_kernel_start);
+	/*vga_putdword("kernel_start: 0x", (uint32_t)&_kernel_start);
 	vga_putdword("\nkernel_end: 0x", (uint32_t)&_kernel_end);
 	vga_putdword("\nkernel_stack_top: 0x", (uint32_t)&_kernel_stack);
 	vga_putdword("\nkernel_stack_bottom: 0x", (uint32_t)&_kernel_stack - KSTACK_S);
-	vga_putdword("\nbootloader_multiboot_magic: 0x", _bootloader_mb_magic);
+	vga_putdword("\nbootloader_multiboot_magic: 0x", _bootloader_mb_magic);*/
 
 	//dump_mb_info(mm_ptr);
 

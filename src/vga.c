@@ -5,8 +5,9 @@
 void vga_clear_screen(uint8_t ch) {
 	struct vga_info_st* vga_info = (struct vga_info_st*)VGA_INFO_ST;
 	uint16_t *screen_buff = (uint16_t*)vga_info->_sc[vga_info->attr & 0b11].base_addr;
+	uint8_t color = vga_info->_sc[vga_info->attr & 0b11]._color;
 	for (uint16_t i = 0; i < VGA_SIZE; i++) 
-		screen_buff[i] = vga_info->_sc[vga_info->attr & 0b11]._color << 8 | (ch? ch: screen_buff[i]&0xff);
+		screen_buff[i] = color << 8 | (ch? ch: screen_buff[i]&0xff);
 }
 
 void vga_enable_cursor() {
@@ -107,7 +108,7 @@ void vga_scroll(volatile struct vga_info_st* vga_info) {
 	screen->_cursor = ((screen->_cursor >> 8)-1) << 8 | screen->_cursor & 0xff;
 
 	//vga_info->shell_enable = 0;
-	vga_info->attr &= ~(1 << 4);
+	vga_info->attr &= ~(1 << 3);
 	
 	for (uint8_t cur_row = 0; cur_row < VGA_H; cur_row++) {
 		for (uint8_t i = 0; i < VGA_W; i++) {
@@ -119,7 +120,7 @@ void vga_scroll(volatile struct vga_info_st* vga_info) {
 	vga_clear_line(vga_info);
 	vga_putstr(SHELL_PROMPT);
 	//vga_info->shell_enable = 1;
-	vga_info->attr |= (1 << 4);
+	vga_info->attr |= (1 << 3);
 }
 
 void vga_putchar(uint8_t ch) {
@@ -133,24 +134,25 @@ void vga_putchar(uint8_t ch) {
 			return;
 		case NEWLINE_SK:
 			//vga_info->_cursor_col = 0;
-			screen->_cursor &= 0xff00;
+			//screen->_cursor &= 0xff00;
 			//vga_info->_cursor_row += 1;
-			screen->_cursor = ((screen->_cursor >> 8)+1) << 8 | screen->_cursor & 0xff;
+			screen->_cursor = ((screen->_cursor >> 8)+1) << 8 | 0;
 
-			if ((vga_info->attr >> 4) & 1) {
+			if ((vga_info->attr >> 3) & 1) {
 				//vga_info->shell_enable = 0;
-				vga_info->attr &= ~(1 << 4);
+				vga_info->attr &= ~(1 << 3);
 				kshell(screen->cmd_line, vga_info);
 				//vga_info->shell_enable = 1;
-				vga_info->attr |= (1 << 4);
+				vga_info->attr |= (1 << 3);
 			}
 			kmemset(screen->cmd_line, sizeof(screen->cmd_line));
 			screen->cmd_line_idx = 0;
-			if ((screen->_cursor >> 8) & 0xff >= VGA_H)
+			if (((screen->_cursor >> 8) & 0xff) >= VGA_H)
 				vga_scroll(vga_info);
 			break;
 		case BACKSPACE_SK:
-			if ((vga_info->attr >> 4) & 1)
+			break;
+			if ((vga_info->attr >> 3) & 1)
 				line_start = kstrlen(SHELL_PROMPT);
 			if (screen->_cursor & 0xff == line_start)
 				break;
@@ -168,11 +170,11 @@ void vga_putchar(uint8_t ch) {
 		default:
 			cur_cursor = ((screen->_cursor&0xff00) >> 8)*VGA_W + (screen->_cursor&0xff);
 
-			ch = ((vga_info->attr >> 3) & 1) ? (ch-32) : ch;
+			ch = (vga_info->attr & 0b100) ? (ch-32) : ch;
 
 			((uint16_t*)screen->base_addr)[ cur_cursor ] = screen->_color<<8|ch;
 
-			if ((vga_info->attr >> 4) & 1)
+			if ((vga_info->attr >> 3) & 1)
 				screen->cmd_line[screen->cmd_line_idx++] = ch;
 
 			//vga_info->_cursor_col += 1;
@@ -222,7 +224,7 @@ void vga_putdword(uint8_t *s, uint32_t dwo) {
 void vga_init() {
 	volatile struct vga_info_st *vga_info = (struct vga_info_st*)VGA_INFO_ST;
 
-	for (uint8_t i = 0; i < VGA_SCREENS; i++) {
+	for (uint8_t i = 0; i < 1; i++) {
 		vga_info->attr = i;
 
 		vga_info->_sc[i].base_addr = VGA_MEM;

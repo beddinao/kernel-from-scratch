@@ -21,7 +21,7 @@ $(ISO_NAME): $(KERNEL_BIN)
 	mkdir -p iso/boot/grub
 	cp $(KERNEL_BIN) iso/boot/
 	cp grub.cfg iso/boot/grub/
-	grub-mkrescue -d /home/beddinao/Documents/grub-pc-bin/usr/lib/grub/i386-pc -v -o $(ISO_NAME) iso
+	grub-mkrescue -d /home/beddinao/Documents/grub-pc-bin/usr/lib/grub/i386-pc -o $(ISO_NAME) iso
 
 $(KERNEL_BIN): $(OBJS)
 	ld $(LDFLAGS) -o $(KERNEL_BIN) $(OBJS)

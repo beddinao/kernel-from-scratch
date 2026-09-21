@@ -76,7 +76,7 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 			if (!(scancode & 0x80))
 				switch (kbd_US[scancode]) {
 					case CTRL_SK:
-						((struct vga_info_st*)VGA_INFO_ST)->attr |= (1 << 3);
+						((struct vga_info_st*)VGA_INFO_ST)->attr |= (1 << 2);
 						break;
 					default:
 						vga_putchar(kbd_US[scancode]);
@@ -86,7 +86,7 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 			else 
 				switch (kbd_US[scancode&0x7f]) {
 					case CTRL_SK:
-						((struct vga_info_st*)VGA_INFO_ST)->attr &= ~(1 << 3);
+						((struct vga_info_st*)VGA_INFO_ST)->attr &= ~(1 << 2);
 						break;
 					default: break;
 				}

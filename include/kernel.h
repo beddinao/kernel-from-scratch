@@ -138,7 +138,7 @@ struct vga_screen_st {
 
 struct vga_info_st {
 	struct vga_screen_st _sc[0b11];
-	uint8_t attr; // shell_on(4) _ctrl(3) _screen(0-2)
+	uint8_t attr; // shell_on(3) _ctrl(2) _screen(0-1)
 } __attribute__((packed));
 
 enum vga_color {
