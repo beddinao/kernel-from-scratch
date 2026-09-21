@@ -31,7 +31,7 @@ struct interrupt_frame {
 
 uint8_t kbd_US [128] =
 {
-	0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
+	0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', BACKSPACE_SK,
 	'\t', /* <-- Tab */
 	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
 	0, /* <-- control key */
@@ -57,7 +57,7 @@ uint8_t kbd_US [128] =
 	0,  /* Down Arrow */
 	0,  /* Page Down */
 	0,  /* Insert Key */
-	0,  /* Delete Key */
+	BACKSPACE_SK,  /* Delete Key */
 	0,   0,   0,
 	0,  /* F11 Key */
 	0,  /* F12 Key */

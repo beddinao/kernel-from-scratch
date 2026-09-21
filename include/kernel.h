@@ -49,6 +49,8 @@
 #define IDT_SIZE IDT_D_S*IDT_D_C
 
 #define SHELL_PROMPT " *kfs> "
+#define NEWLINE_SK '\n'
+#define BACKSPACE_SK '\b'
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
@@ -125,12 +127,12 @@ struct pmm_info_st {
 struct vga_info_st {
 	uint32_t base_addr;
 	uint8_t shell_enable;
-	uint8_t cur_line[VGA_W+1];
-	uint8_t cur_cmd_line_char;
-	uint8_t cur_bg_color;
-	uint8_t cur_fg_color;
-	uint8_t cur_cursor_row;
-	uint8_t cur_cursor_col;
+	uint8_t cmd_line[VGA_W+1];
+	uint8_t cmd_line_idx;
+	uint8_t _bg_color;
+	uint8_t _fg_color;
+	uint8_t _cursor_row;
+	uint8_t _cursor_col;
 } __attribute__((packed));
 
 enum vga_color {
@@ -165,7 +167,8 @@ void vga_set_bg_color(uint8_t);
 void vga_enable_cursor();
 void vga_disable_cursor();
 void vga_update_cursor();
-void vga_clear_screen();
+void vga_clear_screen(uint8_t);
+void vga_reset_screen();
 
 // pmm.c
 void pmm_init(uint32_t);
