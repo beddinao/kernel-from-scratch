@@ -45,7 +45,7 @@ uint8_t pong(uint8_t *cmd_line, uint8_t size) {
 }
 
 uint8_t kshell_bg_wrp(uint8_t *cmd_line, uint8_t size) {
-	uint8_t arg[size] = {0}, arg_size, bgc;
+	uint8_t arg[size], arg_size, bgc;
 	just_arg(arg, cmd_line);
 	arg_size = kstrlen(arg);
 
@@ -58,7 +58,7 @@ uint8_t kshell_bg_wrp(uint8_t *cmd_line, uint8_t size) {
 }
 
 uint8_t kshell_fg_wrp(uint8_t *cmd_line, uint8_t size) {
-	uint8_t arg[size] = {0}, arg_size, fgc;
+	uint8_t arg[size], arg_size, fgc;
 	just_arg(arg, cmd_line);
 	arg_size = kstrlen(arg);
 
