@@ -8,6 +8,7 @@
 #define VGA_INFO_ST	0xA7D8C0
 #define VGA_INIT_CURSOR_COL 0x0
 #define VGA_INIT_CURSOR_ROW 0x0
+#define VGA_SCREENS 0b11 
 #define CRTC_IDX_PORT 0x3d4
 #define CRTC_DATA_PORT 0x3d5
 #define CRTC_RG_STC 0xa
@@ -51,7 +52,9 @@
 #define SHELL_PROMPT " *kfs> "
 #define NEWLINE_SK '\n'
 #define BACKSPACE_SK '\b'
-#define CTRL_SK 'A'
+#define LARROW_SK 0x13
+#define RARROW_SK 0x12
+#define CTRL_SK 0x11 
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
@@ -125,16 +128,17 @@ struct pmm_info_st {
 	uint8_t bitmap[];
 } __attribute__((packed));
 
-struct vga_info_st {
+struct vga_screen_st {
 	uint32_t base_addr;
-	uint8_t shell_enable;
-        uint8_t shell_ctrl;	
 	uint8_t cmd_line[VGA_W+1];
 	uint8_t cmd_line_idx;
-	uint8_t _bg_color;
-	uint8_t _fg_color;
-	uint8_t _cursor_row;
-	uint8_t _cursor_col;
+	uint8_t _color; // bg(4-7) fg(0-3)
+	uint16_t _cursor; // row(8-15) col(0-7)
+} __attribute__((packed));
+
+struct vga_info_st {
+	struct vga_screen_st _scr[0b11];
+	uint8_t attr; // shell_on(4) _ctrl(3) _screen(0-2)
 } __attribute__((packed));
 
 enum vga_color {

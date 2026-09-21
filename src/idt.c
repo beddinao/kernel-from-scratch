@@ -49,9 +49,9 @@ uint8_t kbd_US [128] =
 	0,  /* Up Arrow */
 	0,  /* Page Up */
 	'-',
-	0,  /* Left Arrow */
+	LARROW_SK,  /* Left Arrow */
 	0,
-	0,  /* Right Arrow */
+	RARROW_SK,  /* Right Arrow */
 	'+',
 	0,  /* 79 - End key*/
 	0,  /* Down Arrow */
@@ -73,11 +73,23 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 					"in al, 0x60\n"
 					: "=a" (scancode)
 				   );
-			if (!(scancode & 0x80)) {
-				vga_putchar(kbd_US[scancode]);
-				vga_update_cursor();
-			} else if (kbd_US[scancode & 0x7f] == CTRL_SK)
-				((struct vga_info_st*)VGA_INFO_ST)->shell_ctrl = 0;
+			if (!(scancode & 0x80))
+				switch (kbd_US[scancode]) {
+					case CTRL_SK:
+						((struct vga_info_st*)VGA_INFO_ST)->shell_ctrl = 1;
+						break;
+					default:
+						vga_putchar(kbd_US[scancode]);
+						vga_update_cursor();
+						break;
+				}
+			else 
+				switch (kbd_US[scancode&0x7f]) {
+					case CTRL_SK:
+						((struct vga_info_st*)VGA_INFO_ST)->shell_ctrl = 0;
+						break;
+					default: break;
+				}
 			break;
 		/*case 32:
 			vga_putstr("systimer_interrupt\n");
