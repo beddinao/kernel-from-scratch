@@ -116,6 +116,9 @@ void vga_putchar(uint8_t ch) {
 	switch (ch) {
 		case 0:
 			return;
+		case CTRL_SK:
+			vga_info->shell_ctrl = 1;
+			break;
 		case NEWLINE_SK:
 			vga_info->_cursor_col = 0;
 			vga_info->_cursor_row += 1;
@@ -143,7 +146,7 @@ void vga_putchar(uint8_t ch) {
 			break;
 		default:
 			cur_cursor = vga_info->_cursor_row*VGA_W + vga_info->_cursor_col;
-			((uint16_t*)vga_info->base_addr)[ cur_cursor ] = (vga_info->_bg_color<<4|vga_info->_fg_color)<<8|ch;
+			((uint16_t*)vga_info->base_addr)[ cur_cursor ] = (vga_info->_bg_color<<4|vga_info->_fg_color)<<8|(vga_info->shell_ctrl ?(ch-32) : ch);
 			if (vga_info->shell_enable)
 				vga_info->cmd_line[vga_info->cmd_line_idx++] = ch;
 			vga_info->_cursor_col += 1;
@@ -194,6 +197,7 @@ void vga_init() {
 	vga_info->_bg_color = VGA_BLUE;
 	vga_info->_fg_color = VGA_WHITE;
 	vga_info->shell_enable = 0;
+	vga_info->shell_ctrl = 0;
 	vga_reset_screen();
 	vga_enable_cursor();
 }

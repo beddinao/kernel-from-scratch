@@ -51,6 +51,7 @@
 #define SHELL_PROMPT " *kfs> "
 #define NEWLINE_SK '\n'
 #define BACKSPACE_SK '\b'
+#define CTRL_SK 'A'
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
@@ -127,6 +128,7 @@ struct pmm_info_st {
 struct vga_info_st {
 	uint32_t base_addr;
 	uint8_t shell_enable;
+        uint8_t shell_ctrl;	
 	uint8_t cmd_line[VGA_W+1];
 	uint8_t cmd_line_idx;
 	uint8_t _bg_color;

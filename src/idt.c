@@ -34,7 +34,7 @@ uint8_t kbd_US [128] =
 	0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', BACKSPACE_SK,
 	'\t', /* <-- Tab */
 	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
-	0, /* <-- control key */
+	CTRL_SK, /* <-- control key */
 	'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',  0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/',   0,
 	'*',
 	0,  /* Alt */
@@ -76,7 +76,8 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 			if (!(scancode & 0x80)) {
 				vga_putchar(kbd_US[scancode]);
 				vga_update_cursor();
-			}
+			} else if (kbd_US[scancode & 0x7f] == CTRL_SK)
+				((struct vga_info_st*)VGA_INFO_ST)->shell_ctrl = 0;
 			break;
 		/*case 32:
 			vga_putstr("systimer_interrupt\n");
