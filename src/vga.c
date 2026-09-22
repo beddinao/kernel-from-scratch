@@ -167,7 +167,7 @@ void vga_putchar(uint8_t ch) {
 		case BACKSPACE_SK:
 			if ((vga_info->attr >> 3) & 1)
 				line_start = kstrlen(SHELL_PROMPT);
-			if (screen->_cursor & 0xff == line_start)
+			if ((screen->_cursor & 0xff) == line_start)
 				break;
 
 			screen->_cursor -= 1;

@@ -30,7 +30,7 @@ uint8_t kshell_print_help(uint8_t *cmd_line, uint8_t size) {
         vga_putstr("ping: prints 'pong' to the screen\n");
         vga_putstr("clear: clears entire screen\n");
 	vga_putstr("bg, fg [NM]: change colors:\n");
-	vga_putstr("             [black, blue, green, cyan, red, .., 15]\n");
+	vga_putstr("             [black, blue, green, cyan, red, .., 16]\n");
 	return 1;
 }
 
@@ -49,10 +49,10 @@ uint8_t kshell_bg_wrp(uint8_t *cmd_line, uint8_t size) {
 	just_arg(arg, cmd_line);
 	arg_size = kstrlen(arg);
 
-	if (!arg_size || arg_size > 2 || (bgc = ktonum(arg)&0xff) > 15)
+	if (!arg_size || arg_size > 2 || (bgc = ktonum(arg)&0xff) > 16 || !bgc)
 		return 0;
 
-	vga_set_bg_color(bgc);
+	vga_set_bg_color(bgc-1);
 	vga_clear_screen(0);
 	return 1;
 }
@@ -62,10 +62,10 @@ uint8_t kshell_fg_wrp(uint8_t *cmd_line, uint8_t size) {
 	just_arg(arg, cmd_line);
 	arg_size = kstrlen(arg);
 
-	if (!arg_size || arg_size > 2 || (fgc = ktonum(arg)&0xff) > 15)
+	if (!arg_size || arg_size > 2 || (fgc = ktonum(arg)&0xff) > 16 || !fgc)
 		return 0;
 
-	vga_set_fg_color(fgc);
+	vga_set_fg_color(fgc-1);
 	vga_clear_screen(0);
 	return 1;
 }

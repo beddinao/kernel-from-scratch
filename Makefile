@@ -15,7 +15,7 @@ C_OBJS     = $(patsubst src/%.c, build/%.o, $(C_SRCS))
 ASM_OBJS   = $(patsubst src/%.asm, build/%.o, $(ASM_SRCS))
 OBJS       = $(C_OBJS) $(ASM_OBJS)
 
-GRUB_I386  = "i386-pc"
+GRUB_I386  = i386-pc
 
 all: $(ISO_NAME) 
 
@@ -34,7 +34,7 @@ $(ISO_NAME): $(KERNEL_BIN)
 	mkdir -p iso/boot/grub
 	cp $(KERNEL_BIN) iso/boot/
 	cp grub.cfg iso/boot/grub/
-	grub-mkrescue -o $(ISO_NAME) -d $(GRUB_I386)/usr/lib/grub/i386-pc --install-modules="iso9660 multiboot normal" --locales="" --fonts="" --themes="" 
+	grub-mkrescue -o $(ISO_NAME) iso -d $(GRUB_I386)/usr/lib/grub/i386-pc --install-modules="iso9660 multiboot normal" --locales="" --fonts="" --themes="" 
 
 $(KERNEL_BIN): $(OBJS)
 	ld $(LDFLAGS) -o $(KERNEL_BIN) $(OBJS)

@@ -73,7 +73,9 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 					"in al, 0x60\n"
 					: "=a" (scancode)
 				   );
-			if (!(scancode & 0x80))
+			if (!(scancode & 0x80) && scancode > 128)
+				break;
+			if (!(scancode & 0x80)) {
 				switch (kbd_US[scancode]) {
 					case CTRL_SK:
 						((struct vga_info_st*)VGA_INFO_ST)->attr |= (1 << 2);
@@ -83,6 +85,7 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 						vga_update_cursor();
 						break;
 				}
+			}
 			else 
 				switch (kbd_US[scancode&0x7f]) {
 					case CTRL_SK:
