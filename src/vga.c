@@ -83,11 +83,15 @@ void vga_update_cursor() {
 }
 
 void vga_set_fg_color(uint8_t co) {
-	((struct vga_info_st*)VGA_INFO_ST)->_sc[((struct vga_info_st*)VGA_INFO_ST)->attr & 0b11]._color |= co;
+	struct vga_info_st* vga_info = (struct vga_info_st*)VGA_INFO_ST;
+	vga_info->_sc[vga_info->attr & 0b11]._color &= 0b11110000;
+	vga_info->_sc[vga_info->attr & 0b11]._color |= co;
 }
 
 void vga_set_bg_color(uint8_t co) {
-	((struct vga_info_st*)VGA_INFO_ST)->_sc[((struct vga_info_st*)VGA_INFO_ST)->attr & 0b11]._color |= (co << 4);
+	struct vga_info_st* vga_info = (struct vga_info_st*)VGA_INFO_ST;
+	vga_info->_sc[vga_info->attr & 0b11]._color &= 0b00001111;
+	vga_info->_sc[vga_info->attr & 0b11]._color |= (co << 4);
 }
 
 void vga_clear_line(volatile struct vga_info_st* vga_info) {
