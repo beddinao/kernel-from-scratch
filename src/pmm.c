@@ -87,9 +87,12 @@ void pmm_alloc_reserved_kernel() {
 	pmm_alloc_chunk_eptr((uint32_t)&_kernel_start, (uint32_t)&_kernel_end); // kernel itself
 	pmm_alloc_chunk_len((uint32_t)&_kernel_end, pmm_info->size + sizeof(struct pmm_info_st)); // pmm bitmap
 	pmm_alloc_chunk_len(VGA_INFO_ST, sizeof(struct vga_info_st)); // vga info
+	pmm_alloc_chunk_len(VGA_BUFF0, VGA_SIZE*2); // vga screen0
+	pmm_alloc_chunk_len(VGA_BUFF1, VGA_SIZE*2); // vga screen1
+	pmm_alloc_chunk_len(VGA_BUFF2, VGA_SIZE*2); // vga screen2
 	pmm_alloc_chunk_len(GDT_BASE, GDT_D_S * GDT_D_C); // gdt
-	//pmm_alloc_chunk_len((uint32_t)&_kernel_stack - KSTACK_S, KSTACK_S); 
 	pmm_alloc_chunk_len((uint32_t)(pmm_info->bitmap + pmm_info->size), IDT_SIZE); // future idt
+	//pmm_alloc_chunk_len((uint32_t)&_kernel_stack - KSTACK_S, KSTACK_S); 
 }
 
 void pmm_putinfo() {

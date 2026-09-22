@@ -2,11 +2,15 @@
 #define _KERNEL_H_
 
 #define VGA_W 80
-#define VGA_H 25
+#define VGA_H 24
 #define VGA_SIZE VGA_W*VGA_H
 #define VGA_MEM 0xb8000
-#define VGA_INFO_ST	0xA7D8C0
-#define VGA_INIT_CURSOR_COL 0x0
+#define VGA_BUFF0 0x200000
+#define VGA_BUFF1 VGA_BUFF0+VGA_SIZE*3 
+#define VGA_BUFF2 VGA_BUFF1+VGA_SIZE*3
+#define VGA_BUFF3 VGA_BUFF2+VGA_SIZE*3
+#define VGA_INFO_ST 0xA7D8C0
+#define VGA_INIT_CURSOR_COL 0x7 
 #define VGA_INIT_CURSOR_ROW 0x0
 #define VGA_SCREENS 0b11 
 #define CRTC_IDX_PORT 0x3d4
@@ -137,7 +141,7 @@ struct vga_screen_st {
 } __attribute__((packed));
 
 struct vga_info_st {
-	struct vga_screen_st _sc[0b11];
+	struct vga_screen_st _sc[0b100];
 	uint8_t attr; // shell_on(3) _ctrl(2) _screen(0-1)
 } __attribute__((packed));
 
