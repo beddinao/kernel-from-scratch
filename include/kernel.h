@@ -1,15 +1,23 @@
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
 
+#define _64KB 0x10000
+#define _32KB 0x8000
+#define _16KB 0x4000
+#define _08KB 0x2000
+#define _04KB 0x1000
+
+#define MIN_RAM 0xa00000
+
 #define VGA_W 80
-#define VGA_H 24
+#define VGA_H 25
 #define VGA_SIZE VGA_W*VGA_H
 #define VGA_MEM 0xb8000
-#define VGA_BUFF0 0x200000
-#define VGA_BUFF1 VGA_BUFF0+VGA_SIZE*3 
-#define VGA_BUFF2 VGA_BUFF1+VGA_SIZE*3
-#define VGA_BUFF3 VGA_BUFF2+VGA_SIZE*3
-#define VGA_INFO_ST 0xA7D8C0
+#define VGA_INFO_ST 0x200000
+#define VGA_BUFF0 0x300000
+#define VGA_BUFF1 VGA_BUFF0+VGA_SIZE+_04KB 
+#define VGA_BUFF2 VGA_BUFF1+VGA_SIZE+_04KB
+#define VGA_BUFF3 VGA_BUFF2+VGA_SIZE+_04KB
 #define VGA_INIT_CURSOR_COL 0x7 
 #define VGA_INIT_CURSOR_ROW 0x0
 #define VGA_SCREENS 0b11 
@@ -20,13 +28,7 @@
 #define CRTC_RG_PH 0xe
 #define CRTC_RG_PL 0xf
 
-#define MB1_MAGIC_NM 0x1badb002
-
-#define _64KB 0x10000
-#define _32KB 0x8000
-#define _16KB 0x4000
-#define _08KB 0x2000
-#define _04KB 0x1000
+#define MB1_MAGIC_NM 0x2badb002
 
 #define KSTACK_S _08KB
 
@@ -206,5 +208,8 @@ uint32_t ktonum(uint8_t*);
 
 // shell.c
 void kshell(uint8_t *, struct vga_info_st*);
+
+// error.c
+void panic(uint8_t*);
 
 #endif

@@ -277,8 +277,8 @@ void vga_init() {
 			((uint16_t*)vga_info->_sc[i].base_addr)[pos] = vga_info->_sc[i]._color << 8| ' ';
 			if (!i) ((uint16_t*)VGA_MEM)[pos] = vga_info->_sc[i]._color << 8 | ' ';
 		}
-		vga_putpmttoscreen((uint16_t*)vga_info->_sc[i].base_addr, vga_info->_sc[i]._color, SHELL_PROMPT, pmtlen);
-		if (!i) vga_putpmttoscreen((uint16_t*)VGA_MEM, vga_info->_sc[i]._color, SHELL_PROMPT, pmtlen);
+		if (i) vga_putpmttoscreen((uint16_t*)vga_info->_sc[i].base_addr, vga_info->_sc[i]._color, SHELL_PROMPT, pmtlen);
+		//if (!i) vga_putpmttoscreen((uint16_t*)VGA_MEM, vga_info->_sc[i]._color, SHELL_PROMPT, pmtlen);
 	}
 
 	vga_info->attr = 0;
