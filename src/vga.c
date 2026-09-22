@@ -106,7 +106,7 @@ void vga_reset_screen() {
 
 	vga_clear_screen(' ');
 
-	screen->_cursor = VGA_INIT_CURSOR_ROW << 8 | VGA_INIT_CURSOR_COL;
+	screen->_cursor = VGA_INIT_CURSOR_ROW << 8 | 0;
 
 	screen->cmd_line_idx = 0;
 	kmemset(screen->cmd_line, sizeof(screen->cmd_line));
