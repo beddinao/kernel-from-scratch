@@ -202,7 +202,7 @@ void vga_putchar(uint8_t ch) {
 		default:
 			cur_cursor = ((screen->_cursor&0xff00) >> 8)*VGA_W + (screen->_cursor&0xff);
 
-			ch = (vga_info->attr & 0b100) ? (ch-32) : ch;
+			//ch = (vga_info->attr & 0b100) ? (ch-32) : ch;
 
 			vga_puttoscreen(vga_info, cur_cursor, screen->_color<<8|ch);
 
@@ -287,4 +287,5 @@ void vga_init() {
 
 	vga_info->attr = 0;
 	vga_enable_cursor();
+	vga_info->_sc[0b00]._cursor = 0;
 }
