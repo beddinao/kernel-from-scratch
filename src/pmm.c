@@ -114,6 +114,7 @@ void pmm_init(uint32_t mm_ptr) {
 	pmm_info->frames_count = 0xffffffff / PMMF_S;
 	pmm_info->size = pmm_info->frames_count / 8;
 
+	pmm_info->mm_ptr = mm_ptr;
 	//pmm_putinfo();
 
 	for (uint32_t idx = 0; idx < pmm_info->size; idx++)

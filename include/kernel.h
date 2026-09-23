@@ -131,6 +131,7 @@ struct multiboot_mmap_st {
 struct pmm_info_st {
 	uint32_t size; 
 	uint32_t frames_count;
+	uint32_t mm_ptr;
 	uint8_t bitmap[];
 } __attribute__((packed));
 
@@ -200,6 +201,9 @@ void gdt_init();
 void idt_init();
 uint8_t *idt_perm_offset();
 
+// memory.c
+void dump(uint32_t, uint32_t);
+
 // string.c
 void kmemset(volatile uint8_t*, uint32_t);
 uint8_t kstrcmp(uint8_t*, uint8_t*);
@@ -211,5 +215,8 @@ void kshell(uint8_t *, struct vga_info_st*);
 
 // error.c
 void panic(uint8_t*);
+
+// main.c
+void print_hdr(uint32_t);
 
 #endif

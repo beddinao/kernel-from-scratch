@@ -65,8 +65,6 @@ int kmain(uint32_t _magic, uint32_t mm_ptr) {
 
 	pmm_init(mm_ptr);
 
-	//print_init_info();
-
 	gdt_init();
 	idt_init();
 
