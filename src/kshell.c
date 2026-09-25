@@ -27,13 +27,13 @@ void just_arg(uint8_t *arg, uint8_t *cmd_line) {
 
 uint8_t kshell_print_help(uint8_t *cmd_line, uint8_t size) {
         vga_putstr("list of commands:\n");
-        vga_putstr("clear: clears entire screen\n");
-	vga_putstr("sdump: dumps the current stack\n");
-	vga_putstr("mdump [0xaddr1] [0xaddr2]: dumps memory from addr1 to addr2\n");
-	vga_putstr("bg, fg [NM]: change colors: [black, blue, green, .., 16]\n");
-	vga_putstr("panic [STR]: simulate a kernel panic\n");
-        vga_putstr("ping: prints 'pong' to the screen\n");
-	vga_putstr("hdr: prints the kernel welcome hdr\n");
+        vga_putstr("clear            : clears entire screen\n");
+	vga_putstr("sdump [depth]    : dumps the current stack: sttop-depth - sttop\n");
+	vga_putstr("mdump [0xa] [0xb]: dumps memory from addr1 to addr2\n");
+	vga_putstr("bg, fg [NM]      : change colors: [black, blue, green, .., 16]\n");
+	vga_putstr("panic [STR]      : triggers a kernel panic (no going back)\n");
+        vga_putstr("ping             : prints 'pong' to the screen\n");
+	vga_putstr("hdr              : prints the kernel welcome hdr\n");
 	return 1;
 }
 
@@ -74,10 +74,24 @@ uint8_t kshell_fg_wrp(uint8_t *cmd_line, uint8_t size) {
 }
 
 uint8_t kshell_sdump_wrp(uint8_t *cmd_line, uint8_t size) {
+	uint8_t arg[size], arg_size;
+	uint32_t depth;
+	just_arg(arg, cmd_line);
+	arg_size = kstrlen(arg);
+
+	if (!arg_size || arg_size > 4 || (depth = ktonum(arg)) > KSTACK_S || !depth) {
+		vga_putdword("depth must be between 1 and stack size 0x", KSTACK_S);
+		vga_putchar('\n');
+		return 1;
+	}
+
+	
+	dump((uint32_t)&_kernel_stack-depth, (uint32_t)&_kernel_stack);
 	return 1;
 }
 
 uint8_t kshell_mdump_wrp(uint8_t *cmd_line, uint8_t size) {
+	vga_putstr("NOT IMPLEMENTED YET!\n");
 	return 1;
 }
 

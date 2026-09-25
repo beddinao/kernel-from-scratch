@@ -145,24 +145,18 @@ void vga_putchar(uint8_t ch) {
 		case 0:
 			return;
 		case NEWLINE_SK:
-			//vga_info->_cursor_col = 0;
-			//screen->_cursor &= 0xff00;
-			//vga_info->_cursor_row += 1;
 			screen->_cursor = ((screen->_cursor >> 8)+1) << 8 | 0;
 
 			if (((screen->_cursor >> 8) & 0xff) >= VGA_H)
 				vga_scroll(vga_info);
 
 			if ((vga_info->attr >> 3) & 1) {
-				//vga_info->shell_enable = 0;
 				vga_info->attr &= ~(1 << 3);
 				kshell(screen->cmd_line, vga_info);
-				//vga_info->shell_enable = 1;
 				vga_info->attr |= (1 << 3);
 			}
 			kmemset(screen->cmd_line, sizeof(screen->cmd_line));
 			screen->cmd_line_idx = 0;
-			//screen->_cursor = ((screen->_cursor >> 8)+1) << 8 | 0;
 			break;
 		case BACKSPACE_SK:
 			if ((vga_info->attr >> 3) & 1)
@@ -187,9 +181,15 @@ void vga_putchar(uint8_t ch) {
 				vga_info->attr &= ~(0b11);
 				vga_info->attr |= (line_start&0b11);
 				vga_copy_screen((uint16_t*)VGA_MEM, (uint16_t*)vga_info->_sc[ vga_info->attr & 0b11 ].base_addr);
-				vga_update_cursor();
-				break;
 			}
+			else {
+				if ((screen->_cursor & 0xff) - kstrlen(SHELL_PROMPT) + 1 > screen->cmd_line_idx)
+					break;
+				screen->_cursor += 1;
+				screen->cmd_line_idx += 1;
+			}
+			vga_update_cursor();
+			break;
 		case LARROW_SK:
 			if (vga_info->attr & 0b100) {
 				line_start = (vga_info->attr&0b11) - 1;
@@ -197,26 +197,49 @@ void vga_putchar(uint8_t ch) {
 				vga_info->attr |= (line_start&0b11);
 				vga_copy_screen((uint16_t*)VGA_MEM, (uint16_t*)vga_info->_sc[ vga_info->attr & 0b11 ].base_addr);
 				vga_update_cursor();
-				break;
 			}
-		default:
-			cur_cursor = ((screen->_cursor&0xff00) >> 8)*VGA_W + (screen->_cursor&0xff);
+			else {
+				if ((vga_info->attr >> 3) & 1)
+					line_start = kstrlen(SHELL_PROMPT);
+				if ((screen->_cursor & 0xff) == line_start)
+					break;
 
-			//ch = (vga_info->attr & 0b100) ? (ch-32) : ch;
+				screen->_cursor -= 1;
+				screen->cmd_line_idx -= 1;
+			}
+			vga_update_cursor();
+			break;
+		default:
+			/*if ((screen->_cursor & 0xff) >= VGA_W-1)
+				break;*/
+
+			cur_cursor = ((screen->_cursor&0xff00) >> 8)*VGA_W + (screen->_cursor&0xff);
+			ch = ((vga_info->attr & 0b100) && ch <= 'z' && ch >= 'a') ? (ch-32) : ch;
 
 			vga_puttoscreen(vga_info, cur_cursor, screen->_color<<8|ch);
 
-			if ((vga_info->attr >> 3) & 1)
+			if ((vga_info->attr >> 3) & 1) 
 				screen->cmd_line[screen->cmd_line_idx++] = ch;
 
 			screen->_cursor += 1;
 			//screen->_cursor = (screen->_cursor & 0xff00) | (screen->_cursor & 0xff) + 1;
 
-			if ((screen->_cursor & 0xff) > VGA_W)
+			if ((screen->_cursor & 0xff) > VGA_W) {
+				vga_info->attr &= ~(1<<3);
 				vga_putchar(NEWLINE_SK);
+				vga_info->attr |=  (1<<3);
+			}
 
 			break;
 	}
+}
+
+void vga_putcharsanitize(uint8_t ch) {
+	if ((ch <= '9' && ch >= '0')
+		|| (ch >= 'a' && ch <= 'z')
+		|| (ch >= 'A' && ch <= 'Z'))
+		vga_putchar(ch);
+	else vga_putchar('.');
 }
 
 void vga_putstrlen(uint8_t *p, uint8_t len) {

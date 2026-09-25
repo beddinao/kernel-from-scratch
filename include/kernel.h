@@ -114,9 +114,24 @@ struct multiboot_info_st {
 	uint32_t mods_addr;
 	uint32_t unrelevant_region2[4];
 	uint32_t mmap_length;
-          uint32_t mmap_addr;	
+        uint32_t mmap_addr;	
 	uint32_t unrelevant_region3[3];
 	uint32_t boot_loader_name;
+
+	uint8_t unrelavant[20];
+
+	uint64_t framebuffer_addr;
+	uint32_t framebuffer_pitch;
+	uint32_t framebuffer_width;
+	uint32_t framebuffer_height;
+	uint8_t framebuffer_bpp;
+	uint8_t framebuffer_type;
+	uint8_t framebuffer_red_field_position;
+	uint8_t framebuffer_red_mask_size;
+	uint8_t framebuffer_green_field_position;
+	uint8_t framebuffer_green_mask_size;
+	uint8_t framebuffer_blue_field_position;
+	uint8_t framebuffer_blue_mask_size;
 } __attribute__((packed));
 
 struct multiboot_mmap_st {
@@ -182,6 +197,7 @@ void vga_disable_cursor();
 void vga_update_cursor();
 void vga_clear_screen(uint8_t);
 void vga_reset_screen();
+void vga_putcharsanitize(uint8_t);
 
 // pmm.c
 void pmm_init(uint32_t);
