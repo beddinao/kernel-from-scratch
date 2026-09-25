@@ -1,11 +1,13 @@
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
 
+#define _01MB 0x100000
 #define _64KB 0x10000
 #define _32KB 0x8000
 #define _16KB 0x4000
 #define _08KB 0x2000
 #define _04KB 0x1000
+#define _01KB 0x400
 
 #define MIN_RAM 0xa00000
 
@@ -198,6 +200,7 @@ void vga_update_cursor();
 void vga_clear_screen(uint8_t);
 void vga_reset_screen();
 void vga_putcharsanitize(uint8_t);
+void vga_putsizenm(uint8_t *, uint32_t);
 
 // pmm.c
 void pmm_init(uint32_t);

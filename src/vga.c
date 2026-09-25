@@ -115,12 +115,8 @@ void vga_reset_screen() {
 void vga_scroll(volatile struct vga_info_st* vga_info) {
 	struct vga_screen_st *screen = &(vga_info->_sc[ vga_info->attr & 0b11 ]);
 
-	//vga_info->_cursor_row -= 1;
-	
 	screen->_cursor = ((screen->_cursor >> 8)-1) << 8 | 0;
 
-	//vga_info->attr &= ~(1 << 3);
-	
 	uint16_t idx;
 	for (uint8_t cur_row = 0; cur_row < VGA_H; cur_row++) {
 		for (uint8_t i = 0; i < VGA_W; i++) {
@@ -130,9 +126,6 @@ void vga_scroll(volatile struct vga_info_st* vga_info) {
 	}
 
 	vga_clear_line(vga_info);
-	//vga_putstr(SHELL_PROMPT);
-	//vga_update_cursor();
-	//vga_info->attr |= (1 << 3);
 }
 
 void vga_putchar(uint8_t ch) {
@@ -252,6 +245,27 @@ void vga_putstr(uint8_t *p) {
 		vga_putchar(*p);
 }
 
+void vga_putsizenm(uint8_t* str, uint32_t nm) {
+	uint8_t ch = 'K';
+	uint16_t di = 1;
+
+	vga_putstr(str);
+	if (nm >= _01MB) {
+		nm /= _01MB;
+		ch += 2;
+	}
+	else if (nm >= _01KB) 
+		nm /= _01KB;
+	else	ch = 0;
+
+	while (di < nm / 10) di *= 10;
+	for (; di; di /= 10) {
+		vga_putchar('0' + (nm/di));
+		nm %= di;
+	}
+	vga_putchar(ch);
+	vga_putchar('B');
+}
 
 void vga_puthexnm(uint8_t ch) {
 	uint8_t high = (ch >> 4) & 0x0f;
@@ -305,7 +319,6 @@ void vga_init() {
 			if (!i) ((uint16_t*)VGA_MEM)[pos] = vga_info->_sc[i]._color << 8 | ' ';
 		}
 		if (i) vga_putpmttoscreen((uint16_t*)vga_info->_sc[i].base_addr, vga_info->_sc[i]._color, SHELL_PROMPT, pmtlen);
-		//if (!i) vga_putpmttoscreen((uint16_t*)VGA_MEM, vga_info->_sc[i]._color, SHELL_PROMPT, pmtlen);
 	}
 
 	vga_info->attr = 0;

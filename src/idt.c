@@ -98,13 +98,13 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 			vga_putstr("systimer_interrupt\n");
 			break;*/
 		case 0x0:
-			panic("kernel panic; division per zero exception\n");
+			panic("kernel panic; division per zero exception");
 			break;
 		case 8:
-			panic("kernel panic; double fault exception\n");
+			panic("kernel panic; double fault exception");
 			break;
 		case 14:
-			panic("kernel panic; page fault exception\n");
+			panic("kernel panic; page fault exception");
 			break;
 		/*case 1:
 			vga_putstr("dummy_interrupt_handler\n");
@@ -152,7 +152,7 @@ void pic_remap(void) {
 void idt_init() {
 	uint8_t *idt_base_ptr = idt_perm_offset();
 	uint8_t *idt_limit_ptr = idt_base_ptr + IDT_D_S*IDT_D_C;
-	vga_putdword("\n  idt_base               : 0x", (uint32_t)idt_base_ptr);
+	vga_putdword("\n  IDT_base               : 0x", (uint32_t)idt_base_ptr);
 
 	struct idt_gate_desc *gate_desc = (struct idt_gate_desc*)idt_base_ptr;
 
