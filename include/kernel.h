@@ -190,6 +190,7 @@ void vga_putchar(uint8_t);
 void vga_putstr(uint8_t*);
 void vga_putstrlen(uint8_t*, uint8_t);
 void vga_puthexnm(uint8_t);
+void vga_puthexcnm(uint8_t*, uint8_t);
 void vga_putword(uint8_t*, uint16_t);
 void vga_putdword(uint8_t*, uint32_t);
 void vga_set_fg_color(uint8_t);

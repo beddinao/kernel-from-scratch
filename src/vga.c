@@ -274,6 +274,11 @@ void vga_puthexnm(uint8_t ch) {
 	vga_putchar( low < 10 ? low + '0' : (low - 10) + 'a' );
 }
 
+void vga_puthexcnm(uint8_t *s, uint8_t ch) {
+	vga_putstr(s);
+	vga_puthexnm(ch);
+}
+
 void vga_putword(uint8_t *s, uint16_t wo) {
 	vga_putstr(s);
 	vga_puthexnm((wo >> 8) & 0xff);

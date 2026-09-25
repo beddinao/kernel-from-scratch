@@ -28,9 +28,9 @@ void gdt_dump_seg_registers() {
 	);
 
 	vga_putstr("\n  segment_registers      : ");
-	vga_putword("cs:0x", cs);
-	vga_putword(", ds:0x", ds);
-	vga_putword(", ss:0x", ss);
+	vga_puthexcnm("cs:0x", cs);
+	vga_puthexcnm(", ds:0x", ds);
+	vga_puthexcnm(", ss:0x", ss);
 }
 
 void gdt_dump_seg_descriptors() {
