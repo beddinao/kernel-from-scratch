@@ -152,7 +152,7 @@ void pic_remap(void) {
 void idt_init() {
 	uint8_t *idt_base_ptr = idt_perm_offset();
 	uint8_t *idt_limit_ptr = idt_base_ptr + IDT_D_S*IDT_D_C;
-	vga_putdword("\n  IDT_base               : 0x", (uint32_t)idt_base_ptr);
+	vga_putdword("\n  IDT_base         : 0x", (uint32_t)idt_base_ptr);
 
 	struct idt_gate_desc *gate_desc = (struct idt_gate_desc*)idt_base_ptr;
 

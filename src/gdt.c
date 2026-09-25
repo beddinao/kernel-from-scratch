@@ -27,7 +27,8 @@ void gdt_dump_seg_registers() {
 		: "m" (cs), "m" (ds), "m" (ss) 
 	);
 
-	vga_putstr("\n  segment_registers      : ");
+	//vga_putstr("\n  segment_registers: ");
+	vga_putstr("\n                     segment_registers: ");
 	vga_puthexcnm("cs:0x", cs);
 	vga_puthexcnm(", ds:0x", ds);
 	vga_puthexcnm(", ss:0x", ss);
@@ -39,9 +40,9 @@ void gdt_dump_seg_descriptors() {
 	uint32_t *kernel_data_low = (uint32_t*)GDT_BASE + 4;
 	uint32_t *kernel_data_high = kernel_data_low + 1;
 
-	vga_putword("\n  GDT_base               : 0x", GDT_BASE);
-	vga_putdword("\n  GDT_desc1 (kernel_code): 0x", *kernel_code_high); vga_putdword("", *kernel_code_low);
-	vga_putdword("\n  GDT_desc2 (kernel_data): 0x", *kernel_data_high); vga_putdword("", *kernel_data_low);
+	vga_putword("\n  GDT_base         : 0x", GDT_BASE);
+	vga_putdword(" desc1: 0x", *kernel_code_high); vga_putdword("", *kernel_code_low);
+	vga_putdword(" desc2: 0x", *kernel_data_high); vga_putdword("", *kernel_data_low);
 }
 
 void gdt_init() {

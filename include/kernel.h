@@ -1,6 +1,7 @@
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
 
+#define _04GB 0x100000000
 #define _01MB 0x100000
 #define _64KB 0x10000
 #define _32KB 0x8000
@@ -148,7 +149,9 @@ struct multiboot_mmap_st {
 struct pmm_info_st {
 	uint32_t size; 
 	uint32_t frames_count;
+	uint32_t alloced;
 	uint32_t mm_ptr;
+	uint32_t ram_size;
 	uint8_t bitmap[];
 } __attribute__((packed));
 
@@ -187,6 +190,7 @@ enum vga_color {
 // vga.c
 void vga_init();
 void vga_putchar(uint8_t);
+void vga_putnm(uint8_t*, uint32_t);
 void vga_putstr(uint8_t*);
 void vga_putstrlen(uint8_t*, uint8_t);
 void vga_puthexnm(uint8_t);
@@ -204,7 +208,7 @@ void vga_putcharsanitize(uint8_t);
 void vga_putsizenm(uint8_t *, uint32_t);
 
 // pmm.c
-void pmm_init(uint32_t);
+void pmm_init(uint32_t, uint32_t);
 void pmm_free(uint32_t);
 uint32_t pmm_alloc();
 uint8_t pmm_isused(uint32_t);

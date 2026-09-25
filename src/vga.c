@@ -245,11 +245,23 @@ void vga_putstr(uint8_t *p) {
 		vga_putchar(*p);
 }
 
+void vga_putnm(uint8_t *str, uint32_t nm) {
+	vga_putstr(str);
+	if (!nm) {
+		vga_putchar('0');
+		return;
+	}
+	uint32_t di = 1;
+	while (di < nm / 10) di *= 10;
+	for (; di; di /= 10) {
+		vga_putchar('0' + (nm/di));
+		nm %= di;
+	}
+}
+
 void vga_putsizenm(uint8_t* str, uint32_t nm) {
 	uint8_t ch = 'K';
-	uint16_t di = 1;
 
-	vga_putstr(str);
 	if (nm >= _01MB) {
 		nm /= _01MB;
 		ch += 2;
@@ -258,11 +270,7 @@ void vga_putsizenm(uint8_t* str, uint32_t nm) {
 		nm /= _01KB;
 	else	ch = 0;
 
-	while (di < nm / 10) di *= 10;
-	for (; di; di /= 10) {
-		vga_putchar('0' + (nm/di));
-		nm %= di;
-	}
+	vga_putnm(str, nm);
 	vga_putchar(ch);
 	vga_putchar('B');
 }

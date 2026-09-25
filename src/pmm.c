@@ -5,6 +5,7 @@ void pmm_alloc_frame(uint32_t addr) {
 	uint32_t frame_idx = (addr / PMMF_S);
 	pmm_info->bitmap[ frame_idx / 8 ] |= 1 << (frame_idx % 8);
 	// 11011[0]11 | 00000[1]00
+	pmm_info->alloced += 1;
 }
 
 void pmm_free(uint32_t addr) {
@@ -12,6 +13,7 @@ void pmm_free(uint32_t addr) {
 	uint32_t frame_idx = (addr / PMMF_S);
 	pmm_info->bitmap[ frame_idx / 8 ] &= ~(1 << (frame_idx % 8));
 	// 01000[1]00 & 11111[0]11 
+	pmm_info->alloced -= 1;
 }
 
 uint32_t pmm_alloc() {
@@ -26,6 +28,7 @@ uint32_t pmm_alloc() {
 		
 		if (! ((pmm_info->bitmap[ frame_byte_idx ] >> frame_bit_idx) & 1) ) {
 			pmm_info->bitmap[ frame_byte_idx ] |= 1 << frame_bit_idx;
+			pmm_info->alloced += 1;
 			return frame_idx * PMMF_S;
 		}
 
@@ -98,27 +101,31 @@ void pmm_alloc_reserved_kernel() {
 
 void pmm_putinfo() {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
-	vga_putdword("\npmm_base_addr: 0x", (uint32_t)&pmm_info->bitmap);
-	vga_putdword("\npmm_frames_count: 0x", pmm_info->frames_count);
-	vga_putdword("\npmm_size: 0x", pmm_info->size);
-	vga_putdword("\npmm_end_addr: 0x", (uint32_t)(pmm_info->bitmap + pmm_info->size));
+	vga_putdword("\n  PMM_bitmap_base  : 0x", (uint32_t)&pmm_info->bitmap);
+	vga_putsizenm(" size: ", pmm_info->size);
+	uint32_t free_frames = pmm_info->frames_count - pmm_info->alloced;
+	vga_putnm(" free_frames: ", free_frames);
+	vga_putsizenm(" ", free_frames*PMMF_S);
 }
 
-void pmm_init(uint32_t mm_ptr) {
+void pmm_init(uint32_t mm_ptr, uint32_t ram_size) {
 	struct multiboot_info_st *mbis = (struct multiboot_info_st*)mm_ptr;
 	uint8_t *mb_mmap_ptr = (uint8_t*)mbis->mmap_addr;
 	uint8_t *mb_mmap_eptr = mb_mmap_ptr + mbis->mmap_length;
 	struct multiboot_mmap_st *mb_mmap_st;
 
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
-	pmm_info->frames_count = 0xffffffff / PMMF_S;
+	pmm_info->frames_count = _04GB / PMMF_S;
 	pmm_info->size = pmm_info->frames_count / 8;
+	pmm_info->ram_size = ram_size;
 
 	pmm_info->mm_ptr = mm_ptr;
-	//pmm_putinfo();
 
-	for (uint32_t idx = 0; idx < pmm_info->size; idx++)
+	pmm_info->alloced = 0;
+	for (uint32_t idx = 0; idx < pmm_info->size; idx++) {
 		pmm_info->bitmap[ idx ] = 0xff;
+		pmm_info->alloced += 8;
+	}
 
 	for (; mb_mmap_ptr < mb_mmap_eptr;) {
 		mb_mmap_st = (struct multiboot_mmap_st*)mb_mmap_ptr;
@@ -130,6 +137,7 @@ void pmm_init(uint32_t mm_ptr) {
 
 	pmm_alloc_reserved_system();
 	pmm_alloc_reserved_kernel();
+	pmm_putinfo();
 
 	/*
 	uint32_t frame = pmm_alloc();
