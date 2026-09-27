@@ -10,7 +10,7 @@ extern void isr_dummy();
 
 uint8_t *idt_perm_offset() {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)(&_kernel_end);
-	return (uint8_t*)pmm_info + sizeof(struct pmm_info_st) + pmm_info->size;
+	return (uint8_t*)pmm_info + sizeof(struct pmm_info_st);// + pmm_info->size;
 }
 
 void idt_load_isr(struct idt_gate_desc* idt_gate, uint32_t isr_ptr) {
