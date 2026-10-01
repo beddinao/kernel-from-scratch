@@ -71,11 +71,10 @@ void print_hdr(uint32_t mm_ptr) {
 int kmain(uint32_t _magic, uint32_t mm_ptr) {
 
 	vga_init();
+
 	print_hdr(mm_ptr);
-
-	uint32_t tot_ram_size = inspect_mb_info(_magic, mm_ptr);
-
-	pmm_init(mm_ptr, tot_ram_size);
+	pmm_init(mm_ptr, inspect_mb_info(_magic, mm_ptr));
+	vmm_init();
 
 	gdt_init();
 	idt_init();

@@ -2,6 +2,7 @@
 #define _KERNEL_H_
 
 #define _04GB 0x100000000
+#define _03GB 0xC0000000
 #define _01MB 0x100000
 #define _64KB 0x10000
 #define _32KB 0x8000
@@ -57,6 +58,8 @@
 #define IDT_D_S 8
 #define IDT_D_C 256 
 #define IDT_SIZE IDT_D_S*IDT_D_C
+
+#define HIGH_HALF _03GB
 
 #define SHELL_PROMPT " *kfs> "
 #define NEWLINE_SK '\n'
@@ -220,6 +223,9 @@ void pmm_alloc_chunk_len(uint32_t, uint32_t);
 void pmm_alloc_chunk_eptr(uint32_t, uint32_t);
 void pmm_free_chunk_len(uint32_t, uint32_t);
 void pmm_free_chunk_eptr(uint32_t, uint32_t);
+
+// vmm.c
+void vmm_init();
 
 // gdt.c
 void gdt_init();
