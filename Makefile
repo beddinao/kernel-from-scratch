@@ -48,7 +48,7 @@ build/%.o: src/%.asm
 	$(AS) $(ASFLAGS) $< -o $@ 
 
 run:
-	qemu-system-i386 -m 128M -cdrom $(ISO_NAME) -display gtk,zoom-to-fit=on #-enable-kvm -cpu host
+	qemu-system-i386 -m 128M -cdrom $(ISO_NAME) -display gtk,zoom-to-fit=on -enable-kvm -cpu host
 
 clean:
 	rm -rf build iso

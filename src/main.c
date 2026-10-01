@@ -69,7 +69,7 @@ void print_hdr(uint32_t mm_ptr) {
 }
 
 int kmain(uint32_t _magic, uint32_t mm_ptr) {
-	
+
 	vga_init();
 	print_hdr(mm_ptr);
 

@@ -98,13 +98,13 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 			vga_putstr("systimer_interrupt\n");
 			break;*/
 		case 0x0:
-			panic("kernel panic; division per zero exception");
+			panic("kernel panic; division per zero");
 			break;
 		case 8:
-			panic("kernel panic; double fault exception");
+			panic("kernel panic; double fault");
 			break;
 		case 14:
-			panic("kernel panic; page fault exception");
+			panic("kernel panic; page fault");
 			break;
 		/*case 1:
 			vga_putstr("dummy_interrupt_handler\n");

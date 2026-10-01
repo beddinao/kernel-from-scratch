@@ -78,6 +78,9 @@ typedef long int int64_t;
 extern uint32_t _kernel_start;
 extern uint32_t _kernel_end;
 extern uint32_t _kernel_stack;
+extern uint32_t _boot_page_directory_start;
+extern uint32_t _boot_page_directory_768;
+extern uint32_t _boot_page_table_start;
 
 struct idt_register {
 	uint16_t size;
