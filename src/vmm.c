@@ -8,13 +8,13 @@ void vmm_flush_tlb() {
 }
 
 void vmm_set_pde(uint16_t idx, uint32_t val) {
-	uint32_t *pd = (uint32_t*)((uint32_t)&_boot_page_directory_start + HIGH_HALF);
+	uint32_t *pd = (uint32_t*)((uint32_t)&_boot_page_directory_start + (uint32_t)&__high_half__);
 	pd[idx] = val;
 	vmm_flush_tlb();
 }
 
 void vmm_init() {
-	uint32_t *pd = (uint32_t*)((uint32_t)&_boot_page_directory_start + HIGH_HALF);
+	uint32_t *pd = (uint32_t*)((uint32_t)&_boot_page_directory_start + (uint32_t)&__high_half__);
 
 	uint16_t idx = GDT_BASE % 0x400000;
 }

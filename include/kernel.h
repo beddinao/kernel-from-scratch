@@ -11,14 +11,31 @@
 #define _04KB 0x1000
 #define _01KB 0x400
 
-#define HIGH_HALF _03GB
+typedef unsigned char     uint8_t;
+typedef unsigned short    uint16_t;
+typedef unsigned int      uint32_t;
+typedef unsigned long int uint64_t;
+
+typedef char      int8_t;
+typedef short int int16_t;
+typedef int       int32_t;
+typedef long int  int64_t;
+
+extern uint32_t __high_half__;
+extern uint32_t _kernel_start;
+extern uint32_t _kernel_end;
+extern uint32_t _kernel_stack;
+extern uint32_t _boot_page_directory_start;
+extern uint32_t _boot_page_directory_768;
+extern uint32_t _boot_page_table_start;
+
 #define MIN_RAM 0xa00000
 
 #define VGA_W 80
 #define VGA_H 25
 #define VGA_SIZE (VGA_W*VGA_H)
-#define VGA_MEM (0xb8000+HIGH_HALF)
-#define VGA_INFO_ST (0x200000+HIGH_HALF)
+#define VGA_MEM (0xb8000+(uint32_t)&__high_half__)
+#define VGA_INFO_ST (0x200000+(uint32_t)&__high_half__)
 #define VGA_BUFF0 (VGA_INFO_ST+_04KB)
 #define VGA_BUFF1 (VGA_BUFF0+_04KB)
 #define VGA_BUFF2 (VGA_BUFF1+_04KB)
@@ -33,13 +50,6 @@
 #define CRTC_RG_PH 0xe
 #define CRTC_RG_PL 0xf
 
-/*
-(remote) gef➤  print _04KB*1024 - (((HIGH_HALF+_01MB*4)-4) - HIGH_HALF)
-$22 = 0x4
-(remote) gef➤  print (VGA_BUFF3 + VGA_SIZE) - HIGH_HALF
-$27 = 0x304f40
-*/
-
 #define MB1_MAGIC_NM 0x2badb002
 
 #define KSTACK_S _08KB
@@ -53,7 +63,7 @@ $27 = 0x304f40
 #define RING_2 0b10
 #define RING_3 0b11
 
-#define GDT_BASE (0x800+HIGH_HALF)
+#define GDT_BASE (0x800+(uint32_t)&__high_half__)
 #define GDT_D_S 8
 #define GDT_D_C 7
 #define GDT_D_CODE 0b1
@@ -73,23 +83,6 @@ $27 = 0x304f40
 #define LARROW_SK 0x13
 #define RARROW_SK 0x12
 #define CTRL_SK 0x11 
-
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int uint32_t;
-typedef unsigned long int uint64_t;
-
-typedef char int8_t;
-typedef short int int16_t;
-typedef int int32_t;
-typedef long int int64_t;
-
-extern uint32_t _kernel_start;
-extern uint32_t _kernel_end;
-extern uint32_t _kernel_stack;
-extern uint32_t _boot_page_directory_start;
-extern uint32_t _boot_page_directory_768;
-extern uint32_t _boot_page_table_start;
 
 struct idt_register {
 	uint16_t size;

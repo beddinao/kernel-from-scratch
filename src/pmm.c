@@ -110,7 +110,7 @@ void pmm_putinfo() {
 
 void pmm_init(uint32_t mm_ptr, uint32_t ram_size) {
 	struct multiboot_info_st *mbis = (struct multiboot_info_st*)mm_ptr;
-	uint8_t *mb_mmap_ptr = (uint8_t*)(mbis->mmap_addr+HIGH_HALF);
+	uint8_t *mb_mmap_ptr = (uint8_t*)(mbis->mmap_addr+(uint32_t)&__high_half__);
 	uint8_t *mb_mmap_eptr = mb_mmap_ptr + mbis->mmap_length;
 	struct multiboot_mmap_st *mb_mmap_st;
 

@@ -3,13 +3,13 @@ bits 32
 MAGIC_NM  equ 0x1badb002
 FLAGS     equ 0b11 
 CSUM      equ -(MAGIC_NM + FLAGS)
-_3GB      equ 0xC0000000
 _8KB      equ 0x2000
 
 global start
 extern kmain
 extern _kernel_stack
 
+extern __high_half__
 extern _boot_page_directory_start
 extern _boot_page_directory_768
 extern _boot_page_table_start
@@ -67,14 +67,16 @@ high_half:
 
 start:
 	cli
-	mov esp, (_kernel_stack-_3GB)
-	add ebx, _3GB
+	mov ecx, __high_half__
+	mov esp, _kernel_stack
+	sub esp, ecx
+	add ebx, __high_half__
 	push ebx
 	push eax
 	call zero_pages
 	call setup_dir_slots_0_768
 	call setup_page_table
 	call enable_paging
-	add esp, _3GB 
+	add esp, __high_half__ 
 	mov ebx, high_half
 	jmp ebx

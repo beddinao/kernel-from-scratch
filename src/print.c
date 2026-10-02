@@ -35,23 +35,20 @@ void print_hdr(uint32_t mm_ptr) {
 	//           "                                                                               "
 	vga_info->_sc[ vga_info->attr & 0b11 ]._color = old_color&0b11110000 | 3;
 	vga_putstr("                  :::      ::::::::\n");
-	vga_info->_sc[ vga_info->attr & 0b11 ]._color = old_color&0b11110000 | 3;
 	vga_putstr("                :+:      :+:    :+:\n");
 	vga_info->_sc[ vga_info->attr & 0b11 ]._color = old_color&0b11110000 | 11;
 	vga_putstr("              +:+ +:+         +:+       ");
 	if ((mbd->flags >> 9) & 1) {
 		vga_putstr("BOSS: ");
-		vga_putstr((uint8_t*)(mbd->boot_loader_name+HIGH_HALF));
+		vga_putstr((uint8_t*)(mbd->boot_loader_name+(uint32_t)&__high_half__));
 	}
 	vga_putchar('\n');
 	vga_info->_sc[ vga_info->attr & 0b11 ]._color = old_color&0b11110000 | 15;
 	vga_putdword("            +#+  +:+       +#+          kernel_start: 0x", (uint32_t)&_kernel_start); vga_putchar('\n');
-	vga_info->_sc[ vga_info->attr & 0b11 ]._color = old_color&0b11110000 | 15;
 	vga_putdword("          +#+#+#+#+#+   +#+             kernel_end  : 0x", (uint32_t)&_kernel_end);
 	vga_putsizenm(" ", (uint32_t)&_kernel_end-(uint32_t)&_kernel_start); vga_putchar('\n');
 	vga_info->_sc[ vga_info->attr & 0b11 ]._color = old_color&0b11110000 | 11;
 	vga_putdword("               #+#    #+#               stack_top   : 0x", (uint32_t)&_kernel_stack); vga_putchar('\n');
-	vga_info->_sc[ vga_info->attr & 0b11 ]._color = old_color&0b11110000 | 11;
 	vga_putdword("              ###   ########            stack_bottom: 0x", (uint32_t)&_kernel_stack-KSTACK_S);
 	vga_putsizenm(" ", KSTACK_S); vga_putchar('\n');
 	vga_info->_sc[ vga_info->attr & 0b11 ]._color = old_color;

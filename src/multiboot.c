@@ -10,7 +10,7 @@ uint32_t inspect_mb_info(uint32_t _magic, uint32_t mm_ptr) {
 
 	if ((mbd->flags >> 6) & 1) {
 
-		uint8_t *ptr = (uint8_t*)(mbd->mmap_addr+HIGH_HALF);
+		uint8_t *ptr = (uint8_t*)(mbd->mmap_addr+(uint32_t)&__high_half__);
 		uint8_t *eptr = ptr + mbd->mmap_length;
 		struct multiboot_mmap_st* mb_mmap;
 
