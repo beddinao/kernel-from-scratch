@@ -2,9 +2,9 @@ KERNEL_BIN = kernel.bin
 ISO_NAME   = kfs.iso
 
 CC         = gcc
-CFLAGS	   = -m32 -masm=intel -Iinclude -fno-builtin -fno-stack-protector -nostdlib -nodefaultlibs
+CFLAGS	   = -m32 -masm=intel -Iinclude -fno-builtin -fno-stack-protector -nostdlib -nodefaultlibs -ggdb3 #-O0 -fno-strict-aliasing -fno-omit-frame-pointer
 AS         = nasm
-ASFLAGS    = -f elf32
+ASFLAGS    = -f elf32 -g -F dwarf
 LDFLAGS    = -m elf_i386 -T linker.ld
 
 HEADERS    = $(wildcard include/*.h)
@@ -53,10 +53,14 @@ run:
 clean:
 	rm -rf build iso
 
-fclean: clean
-	rm -rf $(KERNEL_BIN) $(ISO_NAME) i386-pc 
+debug:
+	qemu-system-i386 -m 128 -cdrom $(ISO_NAME) -s -S &
+	gdb $(KERNEL_BIN) -ex 'target remote localhost:1234' -ex 'b *high_half-0xc0000000' -ex 'b *start-0xc0000000' -ex 'b *kmain-0xc0000000' -ex 'b *start+34-0xc0000000' -ex 'b *start+35-0xc0000000'
 
-re: fclean all run
+fclean: clean
+	rm -rf $(KERNEL_BIN) $(ISO_NAME) #i386-pc 
+
+re: fclean all 
 
 #re: fclean all
 

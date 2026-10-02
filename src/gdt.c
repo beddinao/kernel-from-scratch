@@ -40,8 +40,8 @@ void gdt_dump_seg_descriptors() {
 	uint32_t *kernel_data_low = (uint32_t*)GDT_BASE + 4;
 	uint32_t *kernel_data_high = kernel_data_low + 1;
 
-	vga_putword("\n  GDT_base         : 0x", GDT_BASE);
-	vga_putdword(" desc1: 0x", *kernel_code_high); vga_putdword("", *kernel_code_low);
+	vga_putdword("\n  GDT_base         : 0x", GDT_BASE);
+	vga_putdword("\n                     desc1: 0x", *kernel_code_high); vga_putdword("", *kernel_code_low);
 	vga_putdword(" desc2: 0x", *kernel_data_high); vga_putdword("", *kernel_data_low);
 }
 

@@ -1,8 +1,23 @@
 #include <kernel.h>
 
-void kmemset(volatile uint8_t *buff, uint32_t size) {
+void kmemzero(volatile uint8_t *buff, uint32_t size) {
         for (uint32_t i = 0; i < size; i++)
-	      buff[i] = 0;
+		buff[i] = 0;
+}
+
+void kmemset(volatile uint8_t *buff, uint8_t ch, uint32_t size) {
+	for (uint32_t i=0; i < size; i++)
+		buff[i] = ch;
+}
+
+void kmemsetw(volatile uint16_t *buff, uint16_t wd, uint32_t size) {
+	for (uint32_t i=0; i< size; i++)
+		buff[i] = wd;
+}
+
+void kmemsetdw(volatile uint32_t *buff, uint32_t dwd, uint32_t size) {
+	for (uint32_t i=0; i < size; i++)
+		buff[i] = dwd;
 }
 
 uint8_t kstrcmp(uint8_t *str1, uint8_t *str2) {

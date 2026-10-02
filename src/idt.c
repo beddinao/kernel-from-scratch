@@ -2,6 +2,7 @@
 
 extern void isr_division_by_zero();
 extern void isr_double_fault();
+extern void isr_general_fault();
 extern void isr_page_fault();
 extern void isr_systimer();
 extern void isr_keyboard();
@@ -103,6 +104,9 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 		case 8:
 			panic("kernel panic; double fault");
 			break;
+		case 13:
+			panic("kernel panic; general protection fault");
+			break;
 		case 14:
 			panic("kernel panic; page fault");
 			break;
@@ -167,13 +171,14 @@ void idt_init() {
 	gate_desc = (struct idt_gate_desc*)idt_base_ptr;
 	idt_load_isr(gate_desc, (uint32_t)isr_division_by_zero);
 	idt_load_isr(gate_desc + 8, (uint32_t)isr_double_fault);
+	idt_load_isr(gate_desc + 13, (uint32_t)isr_general_fault);
 	idt_load_isr(gate_desc + 14, (uint32_t)isr_page_fault);
 	idt_load_isr(gate_desc + 32, (uint32_t)isr_systimer);
 	idt_load_isr(gate_desc + 33, (uint32_t)isr_keyboard);
 	idt_load_isr(gate_desc + 10, (uint32_t)isr_dummy_ec);
 	idt_load_isr(gate_desc + 11, (uint32_t)isr_dummy_ec);
 	idt_load_isr(gate_desc + 12, (uint32_t)isr_dummy_ec);
-	idt_load_isr(gate_desc + 13, (uint32_t)isr_dummy_ec);
+	//idt_load_isr(gate_desc + 13, (uint32_t)isr_dummy_ec);
 	idt_load_isr(gate_desc + 17, (uint32_t)isr_dummy_ec);
 	idt_load_isr(gate_desc + 21, (uint32_t)isr_dummy_ec);
 

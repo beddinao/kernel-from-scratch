@@ -1,9 +1,10 @@
 bits 32
 
-MAGIC_NM equ 0x1badb002
-FLAGS equ 0b11 
-CSUM equ -(MAGIC_NM + FLAGS)
-_8KB equ 0x2000
+MAGIC_NM  equ 0x1badb002
+FLAGS     equ 0b11 
+CSUM      equ -(MAGIC_NM + FLAGS)
+_3GB      equ 0xC0000000
+_8KB      equ 0x2000
 
 global start
 extern kmain
@@ -57,21 +58,23 @@ enable_paging:
 	mov eax, cr0
 	or eax, 0x80000000 ;[31:1]
 	mov cr0, eax
+	xor eax, eax
 	ret
+
+high_half:
+	call kmain
+	hlt
 
 start:
 	cli
-	mov esp, (_kernel_stack-0xc0000000)
+	mov esp, (_kernel_stack-_3GB)
+	add ebx, _3GB
 	push ebx
 	push eax
 	call zero_pages
 	call setup_dir_slots_0_768
 	call setup_page_table
 	call enable_paging
-	add esp, 0xc0000000
-	; WHAT A STUPID ATTEMPT
-	;mov dword [_boot_page_directory_start], 0
-	;mov eax, cr3
-	;mov cr3, eax
-	call kmain
-	hlt
+	add esp, _3GB 
+	mov ebx, high_half
+	jmp ebx

@@ -11,17 +11,18 @@
 #define _04KB 0x1000
 #define _01KB 0x400
 
+#define HIGH_HALF _03GB
 #define MIN_RAM 0xa00000
 
 #define VGA_W 80
 #define VGA_H 25
-#define VGA_SIZE VGA_W*VGA_H
-#define VGA_MEM 0xb8000
-#define VGA_INFO_ST 0x200000
-#define VGA_BUFF0 0x300000
-#define VGA_BUFF1 VGA_BUFF0+VGA_SIZE+_04KB 
-#define VGA_BUFF2 VGA_BUFF1+VGA_SIZE+_04KB
-#define VGA_BUFF3 VGA_BUFF2+VGA_SIZE+_04KB
+#define VGA_SIZE (VGA_W*VGA_H)
+#define VGA_MEM (0xb8000+HIGH_HALF)
+#define VGA_INFO_ST (0x200000+HIGH_HALF)
+#define VGA_BUFF0 (VGA_INFO_ST+_04KB)
+#define VGA_BUFF1 (VGA_BUFF0+_04KB)
+#define VGA_BUFF2 (VGA_BUFF1+_04KB)
+#define VGA_BUFF3 (VGA_BUFF2+_04KB)
 #define VGA_INIT_CURSOR_COL 0x7 
 #define VGA_INIT_CURSOR_ROW 0x0
 #define VGA_SCREENS 0b11 
@@ -31,6 +32,13 @@
 #define CRTC_RG_ENC 0xb
 #define CRTC_RG_PH 0xe
 #define CRTC_RG_PL 0xf
+
+/*
+(remote) gef➤  print _04KB*1024 - (((HIGH_HALF+_01MB*4)-4) - HIGH_HALF)
+$22 = 0x4
+(remote) gef➤  print (VGA_BUFF3 + VGA_SIZE) - HIGH_HALF
+$27 = 0x304f40
+*/
 
 #define MB1_MAGIC_NM 0x2badb002
 
@@ -45,7 +53,7 @@
 #define RING_2 0b10
 #define RING_3 0b11
 
-#define GDT_BASE 0x800
+#define GDT_BASE (0x800+HIGH_HALF)
 #define GDT_D_S 8
 #define GDT_D_C 7
 #define GDT_D_CODE 0b1
@@ -58,8 +66,6 @@
 #define IDT_D_S 8
 #define IDT_D_C 256 
 #define IDT_SIZE IDT_D_S*IDT_D_C
-
-#define HIGH_HALF _03GB
 
 #define SHELL_PROMPT " *kfs> "
 #define NEWLINE_SK '\n'
@@ -226,6 +232,8 @@ void pmm_free_chunk_eptr(uint32_t, uint32_t);
 
 // vmm.c
 void vmm_init();
+void vmm_flush_tlb();
+void vmm_set_pde(uint16_t, uint32_t);
 
 // gdt.c
 void gdt_init();
@@ -234,11 +242,11 @@ void gdt_init();
 void idt_init();
 uint8_t *idt_perm_offset();
 
-// memory.c
-void dump(uint32_t, uint32_t);
-
 // string.c
-void kmemset(volatile uint8_t*, uint32_t);
+void kmemset(volatile uint8_t*, uint8_t, uint32_t);
+void kmemsetw(volatile uint16_t*, uint16_t, uint32_t);
+void kmemsetdw(volatile uint32_t*, uint32_t, uint32_t);
+void kmemzero(volatile uint8_t*, uint32_t);
 uint8_t kstrcmp(uint8_t*, uint8_t*);
 uint16_t kstrlen(uint8_t*);
 uint32_t ktonum(uint8_t*);
@@ -249,7 +257,11 @@ void kshell(uint8_t *, struct vga_info_st*);
 // error.c
 void panic(uint8_t*);
 
-// main.c
+// print.c
 void print_hdr(uint32_t);
+void dump(uint32_t, uint32_t);
+
+// multiboot.c
+uint32_t inspect_mb_info(uint32_t, uint32_t);
 
 #endif

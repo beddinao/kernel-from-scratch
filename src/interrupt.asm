@@ -1,5 +1,6 @@
 global isr_division_by_zero
 global isr_double_fault
+global isr_general_fault
 global isr_page_fault
 global isr_systimer
 global isr_keyboard
@@ -32,6 +33,10 @@ isr_division_by_zero:
 
 isr_double_fault:
 	push dword 8
+	jmp single_interrupt_wrapper
+
+isr_general_fault:
+	push dword 13
 	jmp single_interrupt_wrapper
 
 isr_page_fault:
