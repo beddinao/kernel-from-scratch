@@ -264,7 +264,13 @@ void pmm_free_chunk_eptr(uint32_t, uint32_t);
 // vmm.c
 void vmm_init();
 void vmm_flush_tlb();
-void vmm_set_pde(uint16_t, uint32_t);
+void vmm_set_pde(struct vmm_pde*, uint16_t, uint32_t);
+
+void vmm_map_page(struct vmm_pde*, uint32_t, uint8_t);
+void vmm_map_range(struct vmm_pde*, uint32_t, uint32_t, uint8_t);
+void vmm_create_pde(struct vmm_pde*, uint32_t, uint8_t);
+uint32_t vmm_create_dir(uint8_t);
+uint32_t vmm_addr_vtop(struct vmm_pde*, uint32_t);
 
 // gdt.c
 void gdt_init();

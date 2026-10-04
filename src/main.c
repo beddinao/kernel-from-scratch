@@ -2,7 +2,13 @@
 
 int kmain(uint32_t _magic, uint32_t mm_ptr) {
 
-	vmm_set_pde(0, 0);
+	struct vmm_pde boot_pd = {
+		(struct vmm_pde*)(
+			(uint32_t)&_boot_page_directory_start
+			+ (uint32_t)&__high_half__
+	)};
+
+	vmm_set_pde(&boot_pd, 0, 0);
 
 	vga_init();
 
