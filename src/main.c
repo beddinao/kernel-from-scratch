@@ -2,13 +2,14 @@
 
 int kmain(uint32_t _magic, uint32_t mm_ptr) {
 
-	struct vmm_pde boot_pd = {
-		(struct vmm_pde*)(
-			(uint32_t)&_boot_page_directory_start
-			+ (uint32_t)&__high_half__
-	)};
+	*((uint32_t*)((uint32_t)&_boot_page_directory_start
+			+ (uint32_t)&__high_half__)) = 0;
 
-	vmm_set_pde(&boot_pd, 0, 0);
+	asm volatile (
+		"mov eax, cr3\n"
+		"mov cr3, eax"
+	);
+	//vmm_set_pde(&boot_pd, 0, 0);
 
 	vga_init();
 
@@ -18,6 +19,8 @@ int kmain(uint32_t _magic, uint32_t mm_ptr) {
 	gdt_init();
 	idt_init();
 
+	/*uint8_t *pt = _04KB;
+	*pt = 0;*/	
 	vmm_init();
 
 	((struct vga_info_st*)&_vga_info_st)->attr |= (1 << 3);
