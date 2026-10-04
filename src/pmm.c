@@ -21,6 +21,9 @@ uint32_t pmm_alloc() {
 	uint8_t frame_bit_idx;
 	uint8_t frame_byte_idx;
 
+	if (pmm_info->alloced >= pmm_info->frames_count)
+		return 0;
+
 	for (uint32_t frame_idx = 0; frame_idx < pmm_info->frames_count; frame_idx++) {
 
 		frame_bit_idx = frame_idx % 8;
@@ -126,7 +129,7 @@ void pmm_init(uint32_t mm_ptr, uint32_t ram_size) {
 
 	pmm_info->alloced = 0;
 	for (uint32_t idx = 0; idx < pmm_info->size; idx++) {
-		//pmm_info->bitmap[ idx ] = 0xff;
+		pmm_info->bitmap[ idx ] = 0xff;
 		pmm_info->alloced += 8;
 	}
 

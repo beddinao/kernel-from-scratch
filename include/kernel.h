@@ -128,9 +128,9 @@ struct gdt_segment_desc {
 	uint8_t base_high;
 } __attribute__((packed));
 
-// https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#Boot-information-format
 
 struct multiboot_info_st {
+// https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#Boot-information-format
 	uint32_t flags;
 	uint32_t mem_lower;
 	uint32_t mem_upper;
@@ -182,6 +182,20 @@ struct pmm_info_st {
 		vga_putdword(" _pmm_bitmap: 0x", (uint32_t)&_pmm_bitmap);
 	*/
 	uint8_t bitmap[];
+} __attribute__((packed));
+
+struct vmm_pde {
+	/* uint8_t flags;
+	uint8_t pt_addr_low; // high(4bits) only
+	uint16_t pt_addr_high; */
+	uint32_t entry;
+} __attribute__((packed));
+
+struct vmm_pte {
+	/* uint8_t flags;
+	uint8_t frame_addr_low; // high(4bits) + low(1bit)=G
+	uint16_t frame_addr_high; */
+	uint32_t entry;
 } __attribute__((packed));
 
 struct vga_screen_st {

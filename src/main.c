@@ -18,6 +18,8 @@ int kmain(uint32_t _magic, uint32_t mm_ptr) {
 	vga_putchar('\n');
 	vga_update_cursor();
 
+	//*((uint8_t*)0) = 0;
+
 	while (1) 
 	        asm volatile ("hlt");
 
