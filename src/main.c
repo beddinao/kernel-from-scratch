@@ -14,7 +14,7 @@ int kmain(uint32_t _magic, uint32_t mm_ptr) {
 
 	vmm_init();
 
-	((struct vga_info_st*)VGA_INFO_ST)->attr |= (1 << 3);
+	((struct vga_info_st*)&_vga_info_st)->attr |= (1 << 3);
 	vga_putchar('\n');
 	vga_update_cursor();
 

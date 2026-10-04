@@ -26,21 +26,30 @@ extern uint32_t __high_half__;
 extern uint32_t _kernel_start;
 extern uint32_t _kernel_end;
 extern uint32_t _kernel_stack;
+extern uint32_t _pmm_info_st;
+extern uint32_t _pmm_bitmap;
+extern uint32_t _idt_offset;
+extern uint32_t _vga_info_st;
+extern uint32_t _vga_buff_0;
+extern uint32_t _vga_buff_1;
+extern uint32_t _vga_buff_2;
+extern uint32_t _vga_buff_3;
 extern uint32_t _boot_page_directory_start;
 extern uint32_t _boot_page_directory_768;
 extern uint32_t _boot_page_table_start;
 
 #define MIN_RAM 0xa00000
+/*
+	TODO: must be dynamic. (defined at the linker stage)
+*/
 
 #define VGA_W 80
 #define VGA_H 25
 #define VGA_SIZE (VGA_W*VGA_H)
 #define VGA_MEM (0xb8000+(uint32_t)&__high_half__)
-#define VGA_INFO_ST (0x200000+(uint32_t)&__high_half__)
-#define VGA_BUFF0 (VGA_INFO_ST+_04KB)
-#define VGA_BUFF1 (VGA_BUFF0+_04KB)
-#define VGA_BUFF2 (VGA_BUFF1+_04KB)
-#define VGA_BUFF3 (VGA_BUFF2+_04KB)
+/*
+ 	TODO: create a dedicated vpage for this.
+*/
 #define VGA_INIT_CURSOR_COL 0x7 
 #define VGA_INIT_CURSOR_ROW 0x0
 #define VGA_SCREENS 0b11 
@@ -65,6 +74,10 @@ extern uint32_t _boot_page_table_start;
 #define RING_3 0b11
 
 #define GDT_BASE (0x800+(uint32_t)&__high_half__)
+/*
+ 	TODO: ignore the subject hardocoded 0x800
+	might interfere with the multiboot info
+*/
 #define GDT_D_S 8
 #define GDT_D_C 7
 #define GDT_D_CODE 0b1
@@ -80,6 +93,9 @@ extern uint32_t _boot_page_table_start;
 
 #define SHELL_PROMPT " *kfs> "
 #define NEWLINE_SK '\n'
+/*
+ 	TODO: use a different value for ENTER
+*/
 #define BACKSPACE_SK '\b'
 #define LARROW_SK 0x13
 #define RARROW_SK 0x12
@@ -158,6 +174,13 @@ struct pmm_info_st {
 	uint32_t alloced;
 	uint32_t mm_ptr;
 	uint32_t ram_size;
+	uint8_t paddit[_04KB-4*5];
+	/*
+		add pading so the bitmap[]
+		is at _pmm_bitmap (alloced by linker)
+		vga_putdword("\n pmm_bitmap[]: 0x", pmm_info->bitmap);
+		vga_putdword(" _pmm_bitmap: 0x", (uint32_t)&_pmm_bitmap);
+	*/
 	uint8_t bitmap[];
 } __attribute__((packed));
 

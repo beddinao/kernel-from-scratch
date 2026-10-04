@@ -14,7 +14,7 @@ void dump(uint32_t st, uint32_t en) {
 			vga_putchar(' ');
 		}
 
-		cur_cursor = &((struct vga_info_st*)VGA_INFO_ST)->_sc[ ((struct vga_info_st*)VGA_INFO_ST)->attr & 0b11 ]._cursor;
+		cur_cursor = &((struct vga_info_st*)&_vga_info_st)->_sc[ ((struct vga_info_st*)&_vga_info_st)->attr & 0b11 ]._cursor;
 		*cur_cursor = *cur_cursor & 0xff00 | (VGA_W - 16);
 
 		for (dw_ptr = st; dw_ptr < st+4 && dw_ptr <= en; dw_ptr++) {
@@ -30,7 +30,7 @@ void dump(uint32_t st, uint32_t en) {
 
 void print_hdr(uint32_t mm_ptr) {
 	volatile struct multiboot_info_st *mbd = (struct multiboot_info_st*)mm_ptr;
-	struct vga_info_st* vga_info = (struct vga_info_st*)VGA_INFO_ST;
+	struct vga_info_st* vga_info = (struct vga_info_st*)&_vga_info_st;
 	uint8_t old_color = vga_info->_sc[ vga_info->attr & 0b11 ]._color;
 	//           "                                                                               "
 	vga_info->_sc[ vga_info->attr & 0b11 ]._color = old_color&0b11110000 | 3;

@@ -9,11 +9,6 @@ extern void isr_keyboard();
 extern void isr_dummy_ec();
 extern void isr_dummy();
 
-uint8_t *idt_perm_offset() {
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)(&_kernel_end);
-	return (uint8_t*)pmm_info + sizeof(struct pmm_info_st) + pmm_info->size;
-}
-
 void idt_load_isr(struct idt_gate_desc* idt_gate, uint32_t isr_ptr) {
 	idt_gate->offset_low = isr_ptr & 0xffff;
 	idt_gate->offset_high = (isr_ptr >> 16) & 0xffff;
@@ -79,7 +74,7 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 			if (!(scancode & 0x80)) {
 				switch (kbd_US[scancode]) {
 					case CTRL_SK:
-						((struct vga_info_st*)VGA_INFO_ST)->attr |= (1 << 2);
+						((struct vga_info_st*)&_vga_info_st)->attr |= (1 << 2);
 						break;
 					default:
 						vga_putchar(kbd_US[scancode]);
@@ -90,7 +85,7 @@ void isr_global_interrupt_handler(struct interrupt_frame* frame) {
 			else 
 				switch (kbd_US[scancode&0x7f]) {
 					case CTRL_SK:
-						((struct vga_info_st*)VGA_INFO_ST)->attr &= ~(1 << 2);
+						((struct vga_info_st*)&_vga_info_st)->attr &= ~(1 << 2);
 						break;
 					default: break;
 				}
@@ -154,7 +149,7 @@ void pic_remap(void) {
 }
 
 void idt_init() {
-	uint8_t *idt_base_ptr = idt_perm_offset();
+	uint8_t *idt_base_ptr = (uint8_t*)&_idt_offset;
 	uint8_t *idt_limit_ptr = idt_base_ptr + IDT_D_S*IDT_D_C;
 	vga_putdword("\n  IDT_base         : 0x", (uint32_t)idt_base_ptr);
 

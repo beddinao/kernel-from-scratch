@@ -1,7 +1,7 @@
 #include <kernel.h>
 
 void pmm_alloc_frame(uint32_t addr) {
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	uint32_t frame_idx = (addr / PMMF_S);
 	pmm_info->bitmap[ frame_idx / 8 ] |= 1 << (frame_idx % 8);
 	// 11011[0]11 | 00000[1]00
@@ -9,7 +9,7 @@ void pmm_alloc_frame(uint32_t addr) {
 }
 
 void pmm_free(uint32_t addr) {
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	uint32_t frame_idx = (addr / PMMF_S);
 	pmm_info->bitmap[ frame_idx / 8 ] &= ~(1 << (frame_idx % 8));
 	// 01000[1]00 & 11111[0]11 
@@ -17,7 +17,7 @@ void pmm_free(uint32_t addr) {
 }
 
 uint32_t pmm_alloc() {
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	uint8_t frame_bit_idx;
 	uint8_t frame_byte_idx;
 
@@ -37,7 +37,7 @@ uint32_t pmm_alloc() {
 }
 
 uint8_t pmm_isused(uint32_t addr) {
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	uint32_t frame_idx = (addr / PMMF_S);
 	return (pmm_info->bitmap[ frame_idx / 8 ] >> (frame_idx % 8)) & 1;
 }
@@ -65,7 +65,7 @@ void pmm_alloc_chunk_len(uint32_t base_addr, uint32_t length) {
 }
 
 void pmm_dump_mmap(uint32_t sidx, uint32_t eidx) {
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	vga_putdword("\npmm_mmap frames dump from 0x", sidx);
 	vga_putdword(" to 0x", eidx);
 	vga_putstr(": ");
@@ -86,21 +86,21 @@ void pmm_alloc_reserved_system() {
 }
 
 void pmm_alloc_reserved_kernel() {
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	pmm_alloc_chunk_eptr((uint32_t)&_kernel_start, (uint32_t)&_kernel_end); // kernel itself
-	pmm_alloc_chunk_len((uint32_t)&_kernel_end, pmm_info->size + sizeof(struct pmm_info_st)); // pmm bitmap
-	pmm_alloc_chunk_len(VGA_INFO_ST, sizeof(struct vga_info_st)); // vga info
-	pmm_alloc_chunk_len(VGA_BUFF0, VGA_SIZE*3); // vga screen0
-	pmm_alloc_chunk_len(VGA_BUFF1, VGA_SIZE*3); // vga screen1
-	pmm_alloc_chunk_len(VGA_BUFF2, VGA_SIZE*3); // vga screen2
-	pmm_alloc_chunk_len(VGA_BUFF3, VGA_SIZE*3); // vga screen3
-	pmm_alloc_chunk_len(GDT_BASE, GDT_D_S * GDT_D_C); // gdt
-	pmm_alloc_chunk_len((uint32_t)(pmm_info->bitmap + pmm_info->size), IDT_SIZE); // idt 
-	//pmm_alloc_chunk_len((uint32_t)&_kernel_stack - KSTACK_S, KSTACK_S); 
+	//pmm_alloc_chunk_len((uint32_t)&_kernel_end, pmm_info->size + sizeof(struct pmm_info_st)); NOTE: NOW INSIDE .bss
+	//pmm_alloc_chunk_len(VGA_INFO_ST, sizeof(struct vga_info_st)); NOTE: NOW INSIDE .bss
+	//pmm_alloc_chunk_len(VGA_BUFF0, VGA_SIZE*3); NOTE: NOW INSIDE .bss
+	//pmm_alloc_chunk_len(VGA_BUFF1, VGA_SIZE*3); NOTE: NOW INSIDE .bss
+	//pmm_alloc_chunk_len(VGA_BUFF2, VGA_SIZE*3); NOTE: NOW INSIDE .bss
+	//pmm_alloc_chunk_len(VGA_BUFF3, VGA_SIZE*3); NOTE: NOW INSIDE .bss
+	pmm_alloc_chunk_len(GDT_BASE, GDT_D_S * GDT_D_C); // gdt TODO: risky
+	//pmm_alloc_chunk_len((uint32_t)(pmm_info->bitmap + pmm_info->size), IDT_SIZE); NOTE: NOW INSIDE .bss
+	//pmm_alloc_chunk_len((uint32_t)&_kernel_stack - KSTACK_S, KSTACK_S); NOTE: NOW INSIDE .bss
 }
 
 void pmm_putinfo() {
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	vga_putdword("\n  PMM_bitmap_base  : 0x", (uint32_t)&pmm_info->bitmap);
 	vga_putsizenm(" size: ", pmm_info->size);
 
@@ -112,12 +112,12 @@ void pmm_putinfo() {
 void pmm_init(uint32_t mm_ptr, uint32_t ram_size) {
 	volatile struct multiboot_info_st *mbis = (struct multiboot_info_st*)mm_ptr;
 
-	volatile uint8_t *mb_mmap_ptr = (uint8_t*)(mbis->mmap_addr+(uint32_t)&__high_half__);
+	uint8_t *mb_mmap_ptr = (uint8_t*)(mbis->mmap_addr+(uint32_t)&__high_half__);
 	uint8_t *mb_mmap_eptr = mb_mmap_ptr + mbis->mmap_length;
 
 	struct multiboot_mmap_st *mb_mmap_st;
 
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	pmm_info->frames_count = ram_size / PMMF_S;
 	pmm_info->size = pmm_info->frames_count / 8;
 	pmm_info->ram_size = ram_size;

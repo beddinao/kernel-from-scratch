@@ -106,7 +106,7 @@ uint8_t kshell_panic_wrp(uint8_t *cmd_line, uint8_t size) {
 }
 
 uint8_t kshell_hdr_wrp(uint8_t *cmd_line, uint8_t size) {
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	print_hdr(pmm_info->mm_ptr);
 	return 1;
 }
