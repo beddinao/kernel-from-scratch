@@ -3,6 +3,7 @@
 
 #define _04GB 0x100000000
 #define _03GB 0xC0000000
+#define _01GB 0x40000000
 #define _01MB 0x100000
 #define _64KB 0x10000
 #define _32KB 0x8000

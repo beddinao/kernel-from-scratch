@@ -103,19 +103,22 @@ void pmm_putinfo() {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
 	vga_putdword("\n  PMM_bitmap_base  : 0x", (uint32_t)&pmm_info->bitmap);
 	vga_putsizenm(" size: ", pmm_info->size);
+
 	uint32_t free_frames = pmm_info->frames_count - pmm_info->alloced;
 	vga_putnm(" free_frames: ", free_frames);
-	vga_putsizenm(" ", free_frames*PMMF_S);
+	vga_putsizenm("x4KB = ", free_frames*PMMF_S);
 }
 
 void pmm_init(uint32_t mm_ptr, uint32_t ram_size) {
-	struct multiboot_info_st *mbis = (struct multiboot_info_st*)mm_ptr;
-	uint8_t *mb_mmap_ptr = (uint8_t*)(mbis->mmap_addr+(uint32_t)&__high_half__);
+	volatile struct multiboot_info_st *mbis = (struct multiboot_info_st*)mm_ptr;
+
+	volatile uint8_t *mb_mmap_ptr = (uint8_t*)(mbis->mmap_addr+(uint32_t)&__high_half__);
 	uint8_t *mb_mmap_eptr = mb_mmap_ptr + mbis->mmap_length;
+
 	struct multiboot_mmap_st *mb_mmap_st;
 
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_kernel_end;
-	pmm_info->frames_count = _04GB / PMMF_S;
+	pmm_info->frames_count = ram_size / PMMF_S;
 	pmm_info->size = pmm_info->frames_count / 8;
 	pmm_info->ram_size = ram_size;
 
@@ -123,13 +126,13 @@ void pmm_init(uint32_t mm_ptr, uint32_t ram_size) {
 
 	pmm_info->alloced = 0;
 	for (uint32_t idx = 0; idx < pmm_info->size; idx++) {
-		pmm_info->bitmap[ idx ] = 0xff;
+		//pmm_info->bitmap[ idx ] = 0xff;
 		pmm_info->alloced += 8;
 	}
 
 	for (; mb_mmap_ptr < mb_mmap_eptr;) {
 		mb_mmap_st = (struct multiboot_mmap_st*)mb_mmap_ptr;
-		if (mb_mmap_st->type == 1) 
+		if (mb_mmap_st->type == 1)  
 			pmm_free_chunk_len(mb_mmap_st->base_addr_low, mb_mmap_st->length_low);
 			
 		mb_mmap_ptr += mb_mmap_st->size + 4;

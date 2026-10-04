@@ -266,7 +266,11 @@ void vga_putnm(uint8_t *str, uint32_t nm) {
 void vga_putsizenm(uint8_t* str, uint32_t nm) {
 	uint8_t ch = 'K';
 
-	if (nm >= _01MB) {
+	/*if (nm >= _01GB) {
+		nm /= _01GB;
+		ch = 'G';
+	}
+	else */if (nm >= _01MB) {
 		nm /= _01MB;
 		ch += 2;
 	}

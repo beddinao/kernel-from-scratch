@@ -32,6 +32,8 @@ uint32_t inspect_mb_info(uint32_t _magic, uint32_t mm_ptr) {
 
 		vga_putdword("  RAM size         : 0x", _tot_ram_size);
 		vga_putsizenm(" ", _tot_ram_size);
+		vga_putdword(", __high_half__: 0x", (uint32_t)&__high_half__);
+		vga_putsizenm(" ", (uint32_t)&__high_half__);
 		if (_tot_ram_size < MIN_RAM)
 			panic("insufficant memory at least 10Mb");
 	}
