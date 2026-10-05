@@ -4,6 +4,7 @@
 #define _04GB 0x100000000
 #define _03GB 0xC0000000
 #define _01GB 0x40000000
+#define _04MB 0x400000
 #define _01MB 0x100000
 #define _64KB 0x10000
 #define _32KB 0x8000
@@ -198,6 +199,32 @@ struct vmm_pte {
 	uint32_t entry;
 } __attribute__((packed));
 
+struct vmm_sys_st {
+	uint32_t fs;
+	uint32_t fe;
+	uint32_t vtop_off;
+/*
+ the above two virtual addreses (fs,fe) are to be
+ used as range for a custom PMM function to allocate
+ a PAGE which will be used to host a Page Table. 
+
+ must be virtual because i need to write to them.
+
+ vtop_off will be used as an offset to convert 
+ that virtual page to a physical frame before writing the PDE
+ since the MMU only understands physical addresses.
+
+ so in order to map virtual pages there must be a known
+ virtual-to-physical mechanism.
+ 
+ TODO: tmp solution, must look into this further
+*/
+	uint8_t pte_flags;
+	uint8_t pde_flags;
+	uint8_t op;
+	uint16_t count;
+} __attribute__((packed));
+
 struct vga_screen_st {
 	uint32_t base_addr;
 	uint8_t cmd_line[VGA_W+1];
@@ -260,16 +287,17 @@ void pmm_alloc_chunk_len(uint32_t, uint32_t);
 void pmm_alloc_chunk_eptr(uint32_t, uint32_t);
 void pmm_free_chunk_len(uint32_t, uint32_t);
 void pmm_free_chunk_eptr(uint32_t, uint32_t);
+uint32_t pmm_alloc_frange(struct vmm_sys_st*);
 
 // vmm.c
 void vmm_init();
 void vmm_flush_tlb();
 void vmm_set_pde(struct vmm_pde*, uint16_t, uint32_t);
 
-void vmm_map_page(struct vmm_pde*, uint32_t, uint8_t);
-void vmm_map_range(struct vmm_pde*, uint32_t, uint32_t, uint8_t);
-void vmm_create_pde(struct vmm_pde*, uint32_t, uint8_t);
-uint32_t vmm_create_dir(uint8_t);
+void vmm_map_page(struct vmm_pde*, uint32_t, struct vmm_sys_st*);
+void vmm_map_range(struct vmm_pde*, uint32_t, uint32_t, struct vmm_sys_st*);
+void vmm_create_pde(struct vmm_pde*, uint32_t, struct vmm_sys_st*);
+uint32_t vmm_create_dir(struct vmm_sys_st*);
 uint32_t vmm_addr_vtop(struct vmm_pde*, uint32_t);
 
 // gdt.c

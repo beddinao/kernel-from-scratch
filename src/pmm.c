@@ -3,29 +3,54 @@
 void pmm_alloc_frame(uint32_t addr) {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	uint32_t frame_idx = (addr / PMMF_S);
-	pmm_info->bitmap[ frame_idx / 8 ] |= 1 << (frame_idx % 8);
-	// 11011[0]11 | 00000[1]00
+	pmm_info->bitmap[ frame_idx / 8 ] |= 1 << (frame_idx % 8); // 11[0]11|00[1]00
 	pmm_info->alloced += 1;
+}
+
+uint32_t pmm_alloc_frange(struct vmm_sys_st *vmm_sys) {
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
+	vmm_sys->op = 0;
+
+	if (pmm_info->alloced >= pmm_info->frames_count) 
+		return 0;
+
+	uint32_t sframe = vmm_sys->fs / PMMF_S;
+	uint32_t eframe = vmm_sys->fe / PMMF_S;
+	uint32_t frame_byte_idx;
+	uint8_t frame_bit_idx;
+
+	for (; sframe <= eframe; sframe++) {
+		frame_byte_idx = sframe / 8;
+		frame_bit_idx = sframe % 8;
+
+		if (!((pmm_info->bitmap[ frame_byte_idx ] >> frame_bit_idx) & 1)) {
+			pmm_info->bitmap[ frame_byte_idx ] |= 1 << frame_bit_idx;
+			vmm_sys->op = 1;
+			vmm_sys->count += 1;
+			pmm_info->alloced += 1;
+			return sframe * PMMF_S;
+		}
+	}
+
+	return 0;
 }
 
 void pmm_free(uint32_t addr) {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	uint32_t frame_idx = (addr / PMMF_S);
-	pmm_info->bitmap[ frame_idx / 8 ] &= ~(1 << (frame_idx % 8));
-	// 01000[1]00 & 11111[0]11 
+	pmm_info->bitmap[ frame_idx / 8 ] &= ~(1 << (frame_idx % 8)); // 00[1]00 & 11[0]11 
 	pmm_info->alloced -= 1;
 }
 
 uint32_t pmm_alloc() {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	uint8_t frame_bit_idx;
-	uint8_t frame_byte_idx;
+	uint32_t frame_byte_idx;
 
 	if (pmm_info->alloced >= pmm_info->frames_count)
 		return 0;
 
 	for (uint32_t frame_idx = 0; frame_idx < pmm_info->frames_count; frame_idx++) {
-
 		frame_bit_idx = frame_idx % 8;
 		frame_byte_idx = frame_idx / 8;
 		
@@ -46,8 +71,6 @@ uint8_t pmm_isused(uint32_t addr) {
 }
 
 void pmm_free_chunk_eptr(uint32_t base_addr, uint32_t eptr) {
-	//vga_putdword("\nfree chunk: 0x", base_addr);
-	//vga_putdword(" eptr: 0x", eptr);
 	for (; base_addr < eptr; base_addr += PMMF_S)
 		pmm_free(base_addr);
 }
@@ -57,8 +80,6 @@ void pmm_free_chunk_len(uint32_t base_addr, uint32_t length) {
 }
 
 void pmm_alloc_chunk_eptr(uint32_t base_addr, uint32_t eptr) {
-	//vga_putdword("\nalloc_chunk: 0x", base_addr);
-	//vga_putdword(" eptr: 0x", eptr);
 	for (; base_addr < eptr; base_addr += PMMF_S)
 		pmm_alloc_frame(base_addr);
 }
@@ -70,8 +91,7 @@ void pmm_alloc_chunk_len(uint32_t base_addr, uint32_t length) {
 void pmm_dump_mmap(uint32_t sidx, uint32_t eidx) {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	vga_putdword("\npmm_mmap frames dump from 0x", sidx);
-	vga_putdword(" to 0x", eidx);
-	vga_putstr(": ");
+	vga_putdword(" to 0x", eidx); vga_putstr(": ");
 	for (; sidx < eidx; sidx++) 
 		vga_putchar( ( pmm_info->bitmap[sidx/8] & (1 << sidx%8) ) ? '1' : '0');
 	vga_putchar('\n');
@@ -104,10 +124,9 @@ void pmm_alloc_reserved_kernel() {
 
 void pmm_putinfo() {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
+	uint32_t free_frames = pmm_info->frames_count - pmm_info->alloced;
 	vga_putdword("\n  PMM_bitmap_base  : 0x", (uint32_t)&pmm_info->bitmap);
 	vga_putsizenm(" size: ", pmm_info->size);
-
-	uint32_t free_frames = pmm_info->frames_count - pmm_info->alloced;
 	vga_putnm(" free_frames: ", free_frames);
 	vga_putsizenm("x4KB = ", free_frames*PMMF_S);
 }
@@ -144,23 +163,4 @@ void pmm_init(uint32_t mm_ptr, uint32_t ram_size) {
 	pmm_alloc_reserved_system();
 	pmm_alloc_reserved_kernel();
 	pmm_putinfo();
-
-	/*
-	uint32_t frame = pmm_alloc();
-	vga_putdword("\nalloced: 0x", frame);
-	vga_putdword(" isused: ", pmm_isused(frame));
-	pmm_free(frame);
-	vga_putdword(" isused after free: ", pmm_isused(frame));
-	*/	
-
-	/*pmm_free_chunk(PMMF_S, PMMF_S * 2);
-	pmm_dump_mmap(0, 5);
-	uint32_t fframe = pmm_alloc();
-	uint32_t sframe = pmm_alloc();
-	vga_putdword("pmm_alloc: 0x", fframe);
-	vga_putdword("\npmm_alloc: 0x", sframe);
-	pmm_free(fframe);
-	vga_putdword("\npmm_alloc: 0x", pmm_alloc());
-	pmm_dump_mmap(0, 5);
-	*/
 }

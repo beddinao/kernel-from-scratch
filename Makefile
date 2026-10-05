@@ -2,7 +2,7 @@ KERNEL_BIN = kernel.bin
 ISO_NAME   = kfs.iso
 
 CC         = gcc
-CFLAGS	   = -m32 -masm=intel -Iinclude -fno-builtin -fno-stack-protector -nostdlib -nodefaultlibs -ggdb3 #-O0 -fno-strict-aliasing -fno-omit-frame-pointer
+CFLAGS	   = -m32 -masm=intel -Iinclude -fno-builtin -fno-stack-protector -nostdlib -nodefaultlibs -ggdb3 -O0# -fno-strict-aliasing -fno-omit-frame-pointer
 AS         = nasm
 ASFLAGS    = -f elf32 -g -F dwarf
 LDFLAGS    = -m elf_i386 -T linker.ld
