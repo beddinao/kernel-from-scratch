@@ -41,9 +41,32 @@ void vmm_map_page(struct vmm_pde* pd, uint32_t vaddr, struct vmm_sys_st *vmm_sys
 	}
 
 	pte[pte_idx].entry = (frame & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
-
 	uint32_t vpt = (pde->entry & 0b11111111111111111111000000000000) - vmm_sys->vtop_off;
+	pde->entry = (vpt & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
+}
 
+void vmm_map_pt(struct vmm_pde* pd, uint32_t vaddr, struct vmm_sys_st *vmm_sys) {
+	uint16_t pde_idx = vaddr >> 22;
+	struct vmm_pde *pde = &pd[pde_idx];
+
+	if (!(pde->entry & 1))
+		vmm_create_pde(pd, vaddr, vmm_sys);
+	if (!vmm_sys->op)
+		return;
+
+	struct vmm_pte *pte = (struct vmm_pte*)(pde->entry & 0b11111111111111111111000000000000);
+
+	for (uint32_t pte_idx = 0; pte_idx < 1024; pte_idx++) {
+		uint32_t frame = pmm_alloc();
+		if (!frame) {
+			pte[pte_idx].entry = 0;
+			vmm_sys->op = 0;
+			return;
+		}
+		//if (!pte_idx || pte_idx == 1023) vga_putdword("\nallc_frame: 0x", frame);
+		pte[pte_idx].entry = (frame & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
+	}
+	uint32_t vpt = (pde->entry & 0b11111111111111111111000000000000) - vmm_sys->vtop_off;
 	pde->entry = (vpt & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
 }
 
@@ -53,6 +76,13 @@ void vmm_map_range(struct vmm_pde *pd, uint32_t vaddr_s, uint32_t vaddr_e, struc
 }
 
 void vmm_create_pde(struct vmm_pde* pd, uint32_t vaddr, struct vmm_sys_st *vmm_sys) {
+	uint32_t avail_sys_sp = vmm_sys->fe - vmm_sys->fs - (vmm_sys->count*_04KB);
+
+	if (avail_sys_sp < _04KB) {
+		vmm_sys->op = 0;
+		return;
+	}
+
 	uint16_t pde_idx = vaddr >> 22;
 	uint32_t pt_frame = pmm_alloc_frange(vmm_sys);
 
@@ -96,26 +126,13 @@ void vmm_init() {
 	struct vmm_pde *boot_pd = (struct vmm_pde*)((uint32_t)&_boot_page_directory_start + (uint32_t)&__high_half__);
 
 	struct vmm_sys_st vmm_sys = {
-		(uint32_t)&_kernel_end,
+		(uint32_t)&_kernel_end + _04KB,
 		(uint32_t)&__high_half__ + _04MB,
 		(uint32_t)&__high_half__,
 		0b11, 0b11, 1, 0
 	};
 
-	vmm_map_page(boot_pd, _01GB, &vmm_sys);
-
+	vmm_map_pt(boot_pd, _01GB, &vmm_sys);
 	vmm_flush_tlb();
-
-	/*
-	uint32_t cr2;
-	asm volatile (
-		"mov eax, cr2\n"
-		"mov %0, eax"
-		:: "m" (cr2)
-	);
-	vga_putdword(" cr2: 0x", cr2);
-	*/
-
-	*((uint8_t*)0x40000000) = 0;
-	*((uint8_t*)0x40000ffe) = 0;
+	kmemzero((uint8_t*)_01GB, _04MB - 1);
 }

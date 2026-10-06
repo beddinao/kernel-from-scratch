@@ -5,7 +5,7 @@ SECTIONS
 {
 	__high_half__ = 0xc0000000;
 
-	. = __high_half__;
+	. = __high_half__ + 1M;
 	_kernel_start = .;
 
 	.text ALIGN(4K): AT(ADDR(.text)- __high_half__) {

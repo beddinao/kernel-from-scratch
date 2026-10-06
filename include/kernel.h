@@ -316,8 +316,9 @@ uint8_t kstrcmp(uint8_t*, uint8_t*);
 uint16_t kstrlen(uint8_t*);
 uint32_t ktonum(uint8_t*);
 
-// shell.c
+// kshell.c
 void kshell(uint8_t *, struct vga_info_st*);
+void kshell_enable();
 
 // error.c
 void panic(uint8_t*);

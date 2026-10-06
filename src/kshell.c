@@ -111,6 +111,12 @@ uint8_t kshell_hdr_wrp(uint8_t *cmd_line, uint8_t size) {
 	return 1;
 }
 
+void kshell_enable() {
+	((struct vga_info_st*)&_vga_info_st)->attr |= (1 << 3);
+	vga_putchar('\n');
+	vga_update_cursor();
+}
+
 void kshell(uint8_t *cmd_line, struct vga_info_st* vga_info) {
 	uint8_t cmd_line_size, status = 0;
 	if (!(cmd_line_size = kstrlen(cmd_line))) {

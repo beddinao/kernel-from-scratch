@@ -14,21 +14,32 @@ uint32_t pmm_alloc_frange(struct vmm_sys_st *vmm_sys) {
 	if (pmm_info->alloced >= pmm_info->frames_count) 
 		return 0;
 
-	uint32_t sframe = vmm_sys->fs / PMMF_S;
-	uint32_t eframe = vmm_sys->fe / PMMF_S;
+	uint32_t sframe = (vmm_sys->fs-vmm_sys->vtop_off) / PMMF_S;
+	uint32_t eframe = (vmm_sys->fe-vmm_sys->vtop_off) / PMMF_S;
+
 	uint32_t frame_byte_idx;
 	uint8_t frame_bit_idx;
 
 	for (; sframe <= eframe; sframe++) {
+
 		frame_byte_idx = sframe / 8;
 		frame_bit_idx = sframe % 8;
 
 		if (!((pmm_info->bitmap[ frame_byte_idx ] >> frame_bit_idx) & 1)) {
+
 			pmm_info->bitmap[ frame_byte_idx ] |= 1 << frame_bit_idx;
+
 			vmm_sys->op = 1;
 			vmm_sys->count += 1;
 			pmm_info->alloced += 1;
-			return sframe * PMMF_S;
+
+			vga_putnm("\n  VMM PT frame ", vmm_sys->count);
+			vga_putdword("   : PHYS 0x", sframe * PMMF_S);
+			vga_putdword(", VIRT 0x", sframe * PMMF_S + vmm_sys->vtop_off);
+			vga_putnm("; free PT frames: ",
+				(vmm_sys->fe-vmm_sys->fs - (vmm_sys->count*_04KB)) / PMMF_S);
+
+			return sframe * PMMF_S + vmm_sys->vtop_off;
 		}
 	}
 
@@ -106,18 +117,23 @@ void pmm_alloc_reserved_system() {
 	pmm_alloc_chunk_eptr(0x000C0000, 0x000C7FFF); // video BIOS
 	pmm_alloc_chunk_eptr(0x000C8000, 0x000EFFFF); // BIOS expansion
 	pmm_alloc_chunk_eptr(0x000F0000, 0x000FFFFF); // motherboard BIOS
+	pmm_alloc_chunk_eptr(0x00000000, 0x00100000);
 }
 
 void pmm_alloc_reserved_kernel() {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
-	pmm_alloc_chunk_eptr((uint32_t)&_kernel_start, (uint32_t)&_kernel_end); // kernel itself
+	pmm_alloc_chunk_eptr(
+			(uint32_t)&_kernel_start - (uint32_t)&__high_half__,
+			(uint32_t)&_kernel_end - (uint32_t)&__high_half__); // kernel itself
 	//pmm_alloc_chunk_len((uint32_t)&_kernel_end, pmm_info->size + sizeof(struct pmm_info_st)); NOTE: NOW INSIDE .bss
 	//pmm_alloc_chunk_len(VGA_INFO_ST, sizeof(struct vga_info_st)); NOTE: NOW INSIDE .bss
 	//pmm_alloc_chunk_len(VGA_BUFF0, VGA_SIZE*3); NOTE: NOW INSIDE .bss
 	//pmm_alloc_chunk_len(VGA_BUFF1, VGA_SIZE*3); NOTE: NOW INSIDE .bss
 	//pmm_alloc_chunk_len(VGA_BUFF2, VGA_SIZE*3); NOTE: NOW INSIDE .bss
 	//pmm_alloc_chunk_len(VGA_BUFF3, VGA_SIZE*3); NOTE: NOW INSIDE .bss
-	pmm_alloc_chunk_len(GDT_BASE, GDT_D_S * GDT_D_C); // gdt TODO: risky
+	pmm_alloc_chunk_len(
+			GDT_BASE - (uint32_t)&__high_half__,
+			GDT_D_S * GDT_D_C); // gdt TODO: risky
 	//pmm_alloc_chunk_len((uint32_t)(pmm_info->bitmap + pmm_info->size), IDT_SIZE); NOTE: NOW INSIDE .bss
 	//pmm_alloc_chunk_len((uint32_t)&_kernel_stack - KSTACK_S, KSTACK_S); NOTE: NOW INSIDE .bss
 }
