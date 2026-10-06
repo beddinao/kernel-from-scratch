@@ -35,6 +35,7 @@ extern uint32_t _vga_buff_0;
 extern uint32_t _vga_buff_1;
 extern uint32_t _vga_buff_2;
 extern uint32_t _vga_buff_3;
+extern uint32_t _heap_info_st;
 extern uint32_t _boot_page_directory_start;
 extern uint32_t _boot_page_directory_768;
 extern uint32_t _boot_page_table_start;
@@ -224,6 +225,31 @@ struct vmm_sys_st {
 	uint8_t op;
 	uint16_t count;
 } __attribute__((packed));
+
+#define HEAP_START 0x0
+
+typedef enum hste {
+	HFREE,
+	HUSED
+} hste;
+
+typedef struct heap_node {
+	hste state;
+	/*uint32_t max_size;
+	uint32_t min_size;
+	*/
+	uint32_t size;
+	struct heap_node *next;
+	struct heap_node *prev;
+	struct heap_node *head;
+	uint8_t magic;
+	uint32_t data;
+} __attribute((packed)) heap_node;
+
+struct heap_info_st {
+	heap_node *head;
+	struct vmm_pde* pd;
+} __attribute((packed));
 
 struct vga_screen_st {
 	uint32_t base_addr;

@@ -63,6 +63,10 @@ SECTIONS
 		. += 80*25;
 
 		. = ALIGN(4K);
+		_heap_info_st = .;
+		. += 4*5 + 2; /* sizeof (heap_node) */
+
+		. = ALIGN(4K);
 		. += 8192;
 		_kernel_stack = .;
 	}
