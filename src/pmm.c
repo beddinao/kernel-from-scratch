@@ -117,7 +117,7 @@ void pmm_alloc_reserved_system() {
 	pmm_alloc_chunk_eptr(0x000C0000, 0x000C7FFF); // video BIOS
 	pmm_alloc_chunk_eptr(0x000C8000, 0x000EFFFF); // BIOS expansion
 	pmm_alloc_chunk_eptr(0x000F0000, 0x000FFFFF); // motherboard BIOS
-	pmm_alloc_chunk_eptr(0x00000000, 0x00100000);
+	pmm_alloc_chunk_eptr(0x00000000, 0x00400000);
 }
 
 void pmm_alloc_reserved_kernel() {

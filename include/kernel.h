@@ -257,6 +257,13 @@ enum vga_color {
 	VGA_WHITE
 };
 
+typedef enum mop_res {
+	PMM_FAILURE,
+	VMM_FAILURE,
+	PMM_SUCCESS,
+	VMM_SUCCESS
+} mop_res;
+
 // vga.c
 void vga_init();
 void vga_putchar(uint8_t);
@@ -293,19 +300,16 @@ uint32_t pmm_alloc_frange(struct vmm_sys_st*);
 void vmm_init();
 void vmm_flush_tlb();
 void vmm_set_pde(struct vmm_pde*, uint16_t, uint32_t);
-
-void vmm_map_page(struct vmm_pde*, uint32_t, struct vmm_sys_st*);
-void vmm_map_range(struct vmm_pde*, uint32_t, uint32_t, struct vmm_sys_st*);
-void vmm_create_pde(struct vmm_pde*, uint32_t, struct vmm_sys_st*);
-uint32_t vmm_create_dir(struct vmm_sys_st*);
-uint32_t vmm_addr_vtop(struct vmm_pde*, uint32_t);
+mop_res vmm_create_pde(struct vmm_pde*, uint32_t, uint8_t);
+mop_res vmm_map_page(struct vmm_pde*, uint32_t, uint16_t);
+mop_res vmm_map_pt(struct vmm_pde*, uint32_t, uint16_t);
+mop_res vmm_map_range(struct vmm_pde*, uint32_t, uint32_t, uint16_t);
 
 // gdt.c
 void gdt_init();
 
 // idt.c
 void idt_init();
-uint8_t *idt_perm_offset();
 
 // string.c
 void kmemset(volatile uint8_t*, uint8_t, uint32_t);

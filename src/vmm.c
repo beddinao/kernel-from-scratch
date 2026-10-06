@@ -20,119 +20,95 @@ void vmm_set_pde(struct vmm_pde *pd, uint16_t idx, uint32_t val) {
 	vmm_flush_tlb();
 }
 
-void vmm_map_page(struct vmm_pde* pd, uint32_t vaddr, struct vmm_sys_st *vmm_sys) {
+mop_res vmm_map_page(struct vmm_pde* pd, uint32_t vaddr, uint16_t flags) {
 	uint16_t pde_idx = vaddr >> 22;
 	uint16_t pte_idx = (vaddr & 0b1111111111000000000000) >> 12;
 	struct vmm_pde *pde = &pd[pde_idx];
 
-	if (!(pde->entry & 1))
-		vmm_create_pde(pd, vaddr, vmm_sys);
-
-	if (!vmm_sys->op)
-		return;
-
-	struct vmm_pte *pte = (struct vmm_pte*)(pde->entry & 0b11111111111111111111000000000000);
-	uint32_t frame = pmm_alloc();
-
-	if (!frame) {
-		pte[pte_idx].entry = 0;
-		vmm_sys->op = 0;
-		return;
+	if (!(pde->entry & 1)) {
+		mop_res vmm_res = vmm_create_pde(pd, vaddr, flags >> 8);
+		if (vmm_res != VMM_SUCCESS)
+			return vmm_res;
 	}
 
-	pte[pte_idx].entry = (frame & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
-	uint32_t vpt = (pde->entry & 0b11111111111111111111000000000000) - vmm_sys->vtop_off;
-	pde->entry = (vpt & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
+	struct vmm_pte *pte = (struct vmm_pte*)((1023 << 22) | (pde_idx << 12) | (pte_idx * 4));
+	//struct vmm_pte *pte = (struct vmm_pte*)(pde->entry & 0b11111111111111111111000000000000);
+
+	uint32_t frame = pmm_alloc();
+	if (!frame) 
+		return PMM_FAILURE;
+
+	pte[pte_idx].entry = (frame & 0b11111111111111111111000000000000) | (flags & 0xff);
+	//uint32_t vpt = (pde->entry & 0b11111111111111111111000000000000) - vmm_sys->vtop_off;
+	//pde->entry = (vpt & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
+	return VMM_SUCCESS;
 }
 
-void vmm_map_pt(struct vmm_pde* pd, uint32_t vaddr, struct vmm_sys_st *vmm_sys) {
+mop_res vmm_map_pt(struct vmm_pde* pd, uint32_t vaddr, uint16_t flags) {
 	uint16_t pde_idx = vaddr >> 22;
 	struct vmm_pde *pde = &pd[pde_idx];
 
-	if (!(pde->entry & 1))
-		vmm_create_pde(pd, vaddr, vmm_sys);
-	if (!vmm_sys->op)
-		return;
+	if (!(pde->entry & 1)) {
+		mop_res vmm_res = vmm_create_pde(pd, vaddr, flags >> 8);
+		if (vmm_res != VMM_SUCCESS)
+			return vmm_res;
+	}
 
-	struct vmm_pte *pte = (struct vmm_pte*)(pde->entry & 0b11111111111111111111000000000000);
+	struct vmm_pte *pte = (struct vmm_pte*)((1023 << 22) | (pde_idx << 12) | 0);
+	//struct vmm_pte *pte = (struct vmm_pte*)(pde->entry & 0b11111111111111111111000000000000);
 
 	for (uint32_t pte_idx = 0; pte_idx < 1024; pte_idx++) {
 		uint32_t frame = pmm_alloc();
-		if (!frame) {
-			pte[pte_idx].entry = 0;
-			vmm_sys->op = 0;
-			return;
-		}
-		//if (!pte_idx || pte_idx == 1023) vga_putdword("\nallc_frame: 0x", frame);
-		pte[pte_idx].entry = (frame & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
+		if (!frame)
+			return PMM_FAILURE;
+		pte[pte_idx].entry = (frame & 0b11111111111111111111000000000000) | (flags & 0xff);
 	}
-	uint32_t vpt = (pde->entry & 0b11111111111111111111000000000000) - vmm_sys->vtop_off;
-	pde->entry = (vpt & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
+	//uint32_t vpt = (pde->entry & 0b11111111111111111111000000000000) - vmm_sys->vtop_off;
+	//pde->entry = (vpt & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
+	vmm_flush_tlb();
+	return VMM_SUCCESS;
 }
 
-void vmm_map_range(struct vmm_pde *pd, uint32_t vaddr_s, uint32_t vaddr_e, struct vmm_sys_st *vmm_sys) {
-	for (; vaddr_s <= vaddr_e; vaddr_s += _04KB)
-		vmm_map_page(pd, vaddr_s, vmm_sys);
+mop_res vmm_map_range(struct vmm_pde *pd, uint32_t vaddr_s, uint32_t vaddr_e, uint16_t flags) {
+	mop_res vmm_res = VMM_SUCCESS;
+	for (; vaddr_s <= vaddr_e && vmm_res == VMM_SUCCESS; vaddr_s += _04KB)
+		vmm_res = vmm_map_page(pd, vaddr_s, flags);
+	vmm_flush_tlb();
+	return vmm_res;
 }
 
-void vmm_create_pde(struct vmm_pde* pd, uint32_t vaddr, struct vmm_sys_st *vmm_sys) {
-	uint32_t avail_sys_sp = vmm_sys->fe - vmm_sys->fs - (vmm_sys->count*_04KB);
-
-	if (avail_sys_sp < _04KB) {
-		vmm_sys->op = 0;
-		return;
-	}
-
+mop_res vmm_create_pde(struct vmm_pde* pd, uint32_t vaddr, uint8_t flags) {
 	uint16_t pde_idx = vaddr >> 22;
-	uint32_t pt_frame = pmm_alloc_frange(vmm_sys);
+	uint32_t pt_frame = pmm_alloc();
 
-	if (!vmm_sys->op) {
-		pd[pde_idx].entry = 0;
-		return;
-	}
-
-	kmemzero((uint8_t*)pt_frame, _04KB);
- 	pd[pde_idx].entry = (pt_frame & 0b11111111111111111111000000000000 ) | vmm_sys->pde_flags;
-}
-
-uint32_t vmm_create_dir(struct vmm_sys_st *vmm_sys) {
-	uint32_t pd_frame = pmm_alloc_frange(vmm_sys);
-
-	if (!vmm_sys->op)
-		return 0;
-
-	kmemzero((uint8_t*)pd_frame, _04KB);
-	return pd_frame;
-}
-
-uint32_t vmm_addr_vtop(struct vmm_pde* pd, uint32_t vaddr) {
-	uint16_t pde_idx = vaddr >> 22;
-	uint16_t pte_idx = (vaddr & 0b1111111111000000000000) >> 12;
-	struct vmm_pde* pde = &pd[pde_idx];
-
+	if (!pt_frame)
+		return PMM_FAILURE;
 	
-	if (!pde || !pde->entry)
-		return 0;
-
-	struct vmm_pte *pte = (struct vmm_pte*)(pde->entry & 0b11111111111111111111000000000000);
-
-	if (!pte || !pte[pte_idx].entry)
-		return 0;
-
-	return (pte[pte_idx].entry & 0b11111111111111111111000000000000) + (vaddr & 0b111111111111);
+ 	pd[pde_idx].entry = (pt_frame & 0b11111111111111111111000000000000 ) | flags;
+	vmm_flush_tlb();
+	return VMM_SUCCESS;
 }
 
 void vmm_init() {
-	struct vmm_pde *boot_pd = (struct vmm_pde*)((uint32_t)&_boot_page_directory_start + (uint32_t)&__high_half__);
+	uint32_t p_pd = (uint32_t)&_boot_page_directory_start;
+	uint32_t v_pd = p_pd + (uint32_t)&__high_half__;
+	
+	vmm_set_pde((struct vmm_pde*)v_pd, 1023, (p_pd & 0b11111111111111111111000000000000) | 0b11);
 
+	/*
 	struct vmm_sys_st vmm_sys = {
 		(uint32_t)&_kernel_end + _04KB,
 		(uint32_t)&__high_half__ + _04MB,
 		(uint32_t)&__high_half__,
 		0b11, 0b11, 1, 0
 	};
+	*/
 
-	vmm_map_pt(boot_pd, _01GB, &vmm_sys);
-	vmm_flush_tlb();
-	kmemzero((uint8_t*)_01GB, _04MB - 1);
+	
+	vmm_map_pt((struct vmm_pde*)v_pd, _03GB + _04MB, (0b11 << 8) | 0b11);
+	kmemzero((uint8_t*)_03GB + _04MB, _04MB - 1);
+	
+
+	vmm_map_page((struct vmm_pde*)v_pd, _03GB + _04MB, (0b11 << 8 | 0b11));
+	kmemzero((uint8_t*)_03GB + _04MB, _04KB);
 }
