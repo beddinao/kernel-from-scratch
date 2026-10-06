@@ -3,8 +3,15 @@
 void pmm_alloc_frame(uint32_t addr) {
 	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
 	uint32_t frame_idx = (addr / PMMF_S);
-	pmm_info->bitmap[ frame_idx / 8 ] |= 1 << (frame_idx % 8); // 11[0]11|00[1]00
+	pmm_info->bitmap[ frame_idx / 8 ] |= 1 << (frame_idx % 8);
 	pmm_info->alloced += 1;
+}
+
+void pmm_free(uint32_t addr) {
+	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
+	uint32_t frame_idx = (addr / PMMF_S);
+	pmm_info->bitmap[ frame_idx / 8 ] &= ~(1 << (frame_idx % 8)); 
+	pmm_info->alloced -= 1;
 }
 
 uint32_t pmm_alloc_frange(struct vmm_sys_st *vmm_sys) {
@@ -16,12 +23,10 @@ uint32_t pmm_alloc_frange(struct vmm_sys_st *vmm_sys) {
 
 	uint32_t sframe = (vmm_sys->fs-vmm_sys->vtop_off) / PMMF_S;
 	uint32_t eframe = (vmm_sys->fe-vmm_sys->vtop_off) / PMMF_S;
-
 	uint32_t frame_byte_idx;
 	uint8_t frame_bit_idx;
 
 	for (; sframe <= eframe; sframe++) {
-
 		frame_byte_idx = sframe / 8;
 		frame_bit_idx = sframe % 8;
 
@@ -44,13 +49,6 @@ uint32_t pmm_alloc_frange(struct vmm_sys_st *vmm_sys) {
 	}
 
 	return 0;
-}
-
-void pmm_free(uint32_t addr) {
-	struct pmm_info_st *pmm_info = (struct pmm_info_st*)&_pmm_info_st;
-	uint32_t frame_idx = (addr / PMMF_S);
-	pmm_info->bitmap[ frame_idx / 8 ] &= ~(1 << (frame_idx % 8)); // 00[1]00 & 11[0]11 
-	pmm_info->alloced -= 1;
 }
 
 uint32_t pmm_alloc() {
@@ -117,7 +115,7 @@ void pmm_alloc_reserved_system() {
 	pmm_alloc_chunk_eptr(0x000C0000, 0x000C7FFF); // video BIOS
 	pmm_alloc_chunk_eptr(0x000C8000, 0x000EFFFF); // BIOS expansion
 	pmm_alloc_chunk_eptr(0x000F0000, 0x000FFFFF); // motherboard BIOS
-	pmm_alloc_chunk_eptr(0x00000000, 0x00400000);
+	//pmm_alloc_chunk_eptr(0x00000000, 0x00400000);
 }
 
 void pmm_alloc_reserved_kernel() {

@@ -19,10 +19,10 @@ int kmain(uint32_t _magic, uint32_t mm_ptr) {
 	idt_init();
 
 	vmm_init();
+	
+	heap_init();
 
 	kshell_enable();
-
-	//*((uint8_t*)0) = 0;
 
 	while (1) 
 	        asm volatile ("hlt");

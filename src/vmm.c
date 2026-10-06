@@ -44,6 +44,23 @@ mop_res vmm_map_page(struct vmm_pde* pd, uint32_t vaddr, uint16_t flags) {
 	return VMM_SUCCESS;
 }
 
+void vmm_free_page(struct vmm_pde* pd, uint32_t vaddr) {
+	uint32_t pde_idx = vaddr >> 22;
+	uint16_t pte_idx = (vaddr & 0b1111111111000000000000) >> 12;
+	struct vmm_pde *pde = &pd[pde_idx];
+
+	if (!(pde->entry & 1))
+		return;
+
+	struct vmm_pte *pte = (struct vmm_pte*)((1023 << 22) | (pde_idx << 12) | (pte_idx * 4));
+
+	if (!(pte[pte_idx].entry & 1))
+		return;
+
+	pmm_free(pte->entry & 0b11111111111111111111000000000000);
+	pte[pte_idx].entry = 0;
+}
+
 mop_res vmm_map_pt(struct vmm_pde* pd, uint32_t vaddr, uint16_t flags) {
 	uint16_t pde_idx = vaddr >> 22;
 	struct vmm_pde *pde = &pd[pde_idx];
@@ -69,6 +86,25 @@ mop_res vmm_map_pt(struct vmm_pde* pd, uint32_t vaddr, uint16_t flags) {
 	return VMM_SUCCESS;
 }
 
+void vmm_free_pt(struct vmm_pde* pd, uint32_t vaddr) {
+	uint16_t pde_idx = vaddr >> 22;
+	struct vmm_pde *pde = &pd[pde_idx];
+
+	if (!(pde->entry & 1))
+		return;	
+
+	struct vmm_pte *pte = (struct vmm_pte*)((1023 << 22) | (pde_idx << 12) | 0);
+
+	for (uint32_t pte_idx = 0; pte_idx < 1024; pte_idx++) {
+		if (!(pte[pte_idx].entry & 1))
+			continue;
+		pmm_free(pte[pte_idx].entry & 0b11111111111111111111000000000000);
+		pte[pte_idx].entry = 0;
+	}
+
+	vmm_delete_pde(pd, vaddr);
+}
+
 mop_res vmm_map_range(struct vmm_pde *pd, uint32_t vaddr_s, uint32_t vaddr_e, uint16_t flags) {
 	mop_res vmm_res = VMM_SUCCESS;
 	for (; vaddr_s <= vaddr_e && vmm_res == VMM_SUCCESS; vaddr_s += _04KB)
@@ -89,6 +125,17 @@ mop_res vmm_create_pde(struct vmm_pde* pd, uint32_t vaddr, uint8_t flags) {
 	return VMM_SUCCESS;
 }
 
+void vmm_delete_pde(struct vmm_pde* pd, uint32_t vaddr) {
+	uint16_t pde_idx = vaddr >> 22;
+
+	if (!(pd[pde_idx].entry & 1))
+		return;
+
+	pmm_free(pd[pde_idx].entry & 0b11111111111111111111000000000000);
+	pd[pde_idx].entry = 0;
+	vmm_flush_tlb();
+}
+
 void vmm_init() {
 	uint32_t p_pd = (uint32_t)&_boot_page_directory_start;
 	uint32_t v_pd = p_pd + (uint32_t)&__high_half__;
@@ -96,19 +143,8 @@ void vmm_init() {
 	vmm_set_pde((struct vmm_pde*)v_pd, 1023, (p_pd & 0b11111111111111111111000000000000) | 0b11);
 
 	/*
-	struct vmm_sys_st vmm_sys = {
-		(uint32_t)&_kernel_end + _04KB,
-		(uint32_t)&__high_half__ + _04MB,
-		(uint32_t)&__high_half__,
-		0b11, 0b11, 1, 0
-	};
-	*/
-
-	
 	vmm_map_pt((struct vmm_pde*)v_pd, _03GB + _04MB, (0b11 << 8) | 0b11);
-	kmemzero((uint8_t*)_03GB + _04MB, _04MB - 1);
-	
-
-	vmm_map_page((struct vmm_pde*)v_pd, _03GB + _04MB, (0b11 << 8 | 0b11));
-	kmemzero((uint8_t*)_03GB + _04MB, _04KB);
+	vmm_free_page((struct vmm_pde*)v_pd, _03GB + _04MB);
+	kmemzero((uint8_t*)_03GB + _04MB + _04KB, _04KB);
+	*/
 }

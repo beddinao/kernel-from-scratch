@@ -304,6 +304,14 @@ mop_res vmm_create_pde(struct vmm_pde*, uint32_t, uint8_t);
 mop_res vmm_map_page(struct vmm_pde*, uint32_t, uint16_t);
 mop_res vmm_map_pt(struct vmm_pde*, uint32_t, uint16_t);
 mop_res vmm_map_range(struct vmm_pde*, uint32_t, uint32_t, uint16_t);
+void vmm_free_page(struct vmm_pde*, uint32_t);
+void vmm_free_pt(struct vmm_pde*, uint32_t);
+void vmm_delete_pde(struct vmm_pde*, uint32_t);
+
+// heap.c
+void heap_init();
+uint32_t kmalloc(uint32_t);
+void kfree(uint32_t);
 
 // gdt.c
 void gdt_init();
