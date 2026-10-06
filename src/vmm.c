@@ -38,7 +38,7 @@ mop_res vmm_map_page(struct vmm_pde* pd, uint32_t vaddr, uint16_t flags) {
 	if (!frame) 
 		return PMM_FAILURE;
 
-	pte[pte_idx].entry = (frame & 0b11111111111111111111000000000000) | (flags & 0xff);
+	pte->entry = (frame & 0b11111111111111111111000000000000) | (flags & 0xff);
 	//uint32_t vpt = (pde->entry & 0b11111111111111111111000000000000) - vmm_sys->vtop_off;
 	//pde->entry = (vpt & 0b11111111111111111111000000000000) | vmm_sys->pte_flags;
 	return VMM_SUCCESS;
@@ -58,7 +58,7 @@ void vmm_free_page(struct vmm_pde* pd, uint32_t vaddr) {
 		return;
 
 	pmm_free(pte->entry & 0b11111111111111111111000000000000);
-	pte[pte_idx].entry = 0;
+	pte->entry = 0;
 }
 
 mop_res vmm_map_pt(struct vmm_pde* pd, uint32_t vaddr, uint16_t flags) {
