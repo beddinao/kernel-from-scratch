@@ -142,6 +142,9 @@ void vmm_init() {
 	
 	vmm_set_pde((struct vmm_pde*)v_pd, 1023, (p_pd & 0b11111111111111111111000000000000) | 0b11);
 
+	vga_putdword("\n  VMM init PD      : 0x", v_pd);
+	vga_putstr(" recursive-paging PDE: 1023, st: 0xffc00000 ");
+
 	/*
 	vmm_map_pt((struct vmm_pde*)v_pd, _03GB + _04MB, (0b11 << 8) | 0b11);
 	vmm_free_page((struct vmm_pde*)v_pd, _03GB + _04MB);

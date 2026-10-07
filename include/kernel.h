@@ -35,7 +35,7 @@ extern uint32_t _vga_buff_0;
 extern uint32_t _vga_buff_1;
 extern uint32_t _vga_buff_2;
 extern uint32_t _vga_buff_3;
-extern uint32_t _heap_info_st;
+extern uint32_t _lheap_info_st;
 extern uint32_t _boot_page_directory_start;
 extern uint32_t _boot_page_directory_768;
 extern uint32_t _boot_page_table_start;
@@ -233,21 +233,18 @@ typedef enum hste {
 	HUSED
 } hste;
 
-typedef struct heap_node {
+typedef struct lheap_node {
 	hste state;
-	/*uint32_t max_size;
-	uint32_t min_size;
-	*/
-	uint32_t size;
-	struct heap_node *next;
-	struct heap_node *prev;
-	struct heap_node *head;
+	uint32_t bsize;
+	uint32_t vsize;
+	struct lheap_node *next;
+	struct lheap_node *prev;
 	uint8_t magic;
 	uint32_t data;
-} __attribute((packed)) heap_node;
+} __attribute((packed)) lheap_node;
 
-struct heap_info_st {
-	heap_node *head;
+struct lheap_info_st {
+	lheap_node *head;
 	struct vmm_pde* pd;
 } __attribute((packed));
 
@@ -334,10 +331,10 @@ void vmm_free_page(struct vmm_pde*, uint32_t);
 void vmm_free_pt(struct vmm_pde*, uint32_t);
 void vmm_delete_pde(struct vmm_pde*, uint32_t);
 
-// heap.c
-void heap_init();
-uint32_t kmalloc(uint32_t);
-void kfree(uint32_t);
+// list_heap.c
+void lheap_init();
+uint32_t klmalloc(uint32_t);
+void klfree(uint32_t);
 
 // gdt.c
 void gdt_init();

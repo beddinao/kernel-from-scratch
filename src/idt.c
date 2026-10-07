@@ -185,4 +185,6 @@ void idt_init() {
 			"sti\n"
 			:: "m" (idtr)
 		   );
+
+	vga_putstr(" ISRs for: 0, 8, 13, 14, 33");
 }
