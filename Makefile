@@ -21,8 +21,8 @@ all: $(ISO_NAME)
 
 i386_modules:
 	mkdir -p $(GRUB_I386) 
-	wget -P $(GRUB_I386) http://ftp.us.debian.org/debian/pool/main/g/grub2/grub-pc-bin_2.14-3_i386.deb
-	dpkg -x i386-pc/grub-pc-bin_2.14-3_i386.deb $(GRUB_I386)
+	wget -P $(GRUB_I386) http://ftp.us.debian.org/debian/pool/main/g/grub2/grub-pc-bin_2.14-4_i386.deb
+	dpkg -x i386-pc/grub-pc-bin_2.14-4_i386.deb $(GRUB_I386)
 
 
 $(ISO_NAME): $(KERNEL_BIN)

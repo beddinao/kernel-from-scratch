@@ -203,8 +203,8 @@ void vga_putchar(uint8_t ch) {
 			vga_update_cursor();
 			break;
 		default:
-			/*if ((screen->_cursor & 0xff) >= VGA_W-1)
-				break;*/
+			if ((screen->_cursor & 0xff) >= VGA_W-1)
+				break;
 
 			cur_cursor = ((screen->_cursor&0xff00) >> 8)*VGA_W + (screen->_cursor&0xff);
 			ch = ((vga_info->attr & 0b100) && ch <= 'z' && ch >= 'a') ? (ch-32) : ch;
