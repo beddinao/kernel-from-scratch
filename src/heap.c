@@ -96,7 +96,7 @@ void heap_init() {
 	
 	//kfree(new_space);
 
-	new_space = kmalloc(4);
+	new_space = kmalloc(2);
 
 	vga_putdword("\nnew: 0x", (uint32_t)new_space);
 	vga_putdword(": ", ksize((uint32_t)new_space));
