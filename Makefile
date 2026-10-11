@@ -21,8 +21,8 @@ all: $(ISO_NAME)
 
 i386_modules:
 	mkdir -p $(GRUB_I386) 
-	wget -P $(GRUB_I386) http://ftp.us.debian.org/debian/pool/main/g/grub2/grub-pc-bin_2.14-3_i386.deb
-	dpkg -x i386-pc/grub-pc-bin_2.14-3_i386.deb $(GRUB_I386)
+	wget -P $(GRUB_I386) http://ftp.us.debian.org/debian/pool/main/g/grub2/grub-pc-bin_2.14-4_i386.deb
+	dpkg -x i386-pc/grub-pc-bin_2.14-4_i386.deb $(GRUB_I386)
 
 
 $(ISO_NAME): $(KERNEL_BIN)
@@ -58,7 +58,7 @@ debug:
 	gdb $(KERNEL_BIN) -ex 'target remote localhost:1234' -ex 'b *high_half-0xc0000000' -ex 'b *start-0xc0000000' -ex 'b *kmain-0xc0000000' -ex 'b *start+34-0xc0000000' -ex 'b *start+35-0xc0000000'
 
 fclean: clean
-	rm -rf $(KERNEL_BIN) $(ISO_NAME) #i386-pc 
+	rm -rf $(KERNEL_BIN) $(ISO_NAME) i386-pc 
 
 re: fclean all 
 

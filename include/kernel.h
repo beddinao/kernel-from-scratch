@@ -36,6 +36,7 @@ extern uint32_t _vga_buff_1;
 extern uint32_t _vga_buff_2;
 extern uint32_t _vga_buff_3;
 extern uint32_t _lheap_info_st;
+extern uint32_t _heap_info_st;
 extern uint32_t _boot_page_directory_start;
 extern uint32_t _boot_page_directory_768;
 extern uint32_t _boot_page_table_start;
@@ -248,6 +249,32 @@ struct lheap_info_st {
 	struct vmm_pde* pd;
 } __attribute((packed));
 
+typedef struct heap_node {
+	uint32_t esp;
+	uint32_t page;
+	uint32_t size;
+}__attribute__((packed)) heap_node;
+
+struct heap_header {
+	uint32_t prev_page;
+	uint32_t next_page;
+	heap_node *head;
+} __attribute__((packed));
+
+struct heap_info_st {
+	heap_node ____4b;
+	heap_node ____8b;
+	heap_node ___16b;
+	heap_node ___32b;
+	heap_node ___64b;
+	heap_node __128b;
+	heap_node __256b;
+	heap_node __512b;
+	heap_node _1024b;
+	heap_node _2048b;
+	uint32_t current_page;
+} __attribute__((packed));
+
 struct vga_screen_st {
 	uint32_t base_addr;
 	uint8_t cmd_line[VGA_W+1];
@@ -335,6 +362,12 @@ void vmm_delete_pde(struct vmm_pde*, uint32_t);
 void lheap_init();
 uint32_t klmalloc(uint32_t);
 void klfree(uint32_t);
+
+// heap.c
+void heap_init();
+void *kmalloc(uint32_t);
+void kfree(void*);
+uint32_t ksize(uint32_t);
 
 // gdt.c
 void gdt_init();

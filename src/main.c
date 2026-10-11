@@ -20,7 +20,7 @@ int kmain(uint32_t _magic, uint32_t mm_ptr) {
 
 	vmm_init();
 	
-	lheap_init();
+	heap_init();
 
 	kshell_enable();
 
