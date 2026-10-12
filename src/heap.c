@@ -128,5 +128,7 @@ uint8_t heap_init() {
 		heap_info->heap_brk += _04KB;
 	}
 
+	vga_putdword("\n  SLAB heap brk    : 0x", heap_info->heap_brk);
+
 	return 1;
 }
