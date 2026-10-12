@@ -1,7 +1,6 @@
-# *`kernel-from-scratch (KFS-1-TO-4)`*
-
 <img width="1802" height="990" alt="kfs-entry" src="https://github.com/user-attachments/assets/1c313e3e-a722-4fc1-8ec1-b8487d8c7460" />
 
+# *`kernel-from-scratch (KFS-1-TO-4)`*
 ## ENVIRONMENT
 This project was developed, compiled, and emulated using standard Linux build tools rather than a dedicated cross-compiler. The specific tools utilized are:
 ```
