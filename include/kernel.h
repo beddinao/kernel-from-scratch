@@ -220,6 +220,8 @@ struct vmm_sys_st {
  virtual-to-physical mechanism.
  
  TODO: tmp solution, must look into this further
+ NOTE: done using recursive paging
+
 */
 	uint8_t pte_flags;
 	uint8_t pde_flags;
@@ -228,6 +230,7 @@ struct vmm_sys_st {
 } __attribute__((packed));
 
 #define HEAP_START 0x0
+#define HEAP_MAX_VPAGE_CACHE 0x10
 
 typedef enum hste {
 	HFREE,
@@ -255,11 +258,13 @@ typedef struct heap_node {
 	uint32_t size;
 }__attribute__((packed)) heap_node;
 
-struct heap_header {
-	uint32_t prev_page;
-	uint32_t next_page;
+typedef struct heap_header {
+	struct heap_header *prev_page;
+	struct heap_header *next_page;
 	heap_node *head;
-} __attribute__((packed));
+	uint32_t used_count;
+	uint32_t depth;
+} __attribute__((packed)) heap_header;
 
 struct heap_info_st {
 	heap_node ____4b;
@@ -272,7 +277,8 @@ struct heap_info_st {
 	heap_node __512b;
 	heap_node _1024b;
 	heap_node _2048b;
-	uint32_t current_page;
+	uint32_t vpage_cache;
+	uint32_t heap_brk;
 } __attribute__((packed));
 
 struct vga_screen_st {
@@ -349,7 +355,7 @@ uint32_t pmm_alloc_frange(struct vmm_sys_st*);
 // vmm.c
 void vmm_init();
 void vmm_flush_tlb();
-void vmm_set_pde(struct vmm_pde*, uint16_t, uint32_t);
+void vmm_set_pde(uint16_t, uint32_t);
 mop_res vmm_create_pde(struct vmm_pde*, uint32_t, uint8_t);
 mop_res vmm_map_page(struct vmm_pde*, uint32_t, uint16_t);
 mop_res vmm_map_pt(struct vmm_pde*, uint32_t, uint16_t);
@@ -364,10 +370,10 @@ uint32_t klmalloc(uint32_t);
 void klfree(uint32_t);
 
 // heap.c
-void heap_init();
+uint8_t heap_init();
 void *kmalloc(uint32_t);
 void kfree(void*);
-uint32_t ksize(uint32_t);
+uint32_t ksize(void*);
 
 // gdt.c
 void gdt_init();

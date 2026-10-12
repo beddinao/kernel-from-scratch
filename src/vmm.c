@@ -15,7 +15,8 @@ void vmm_load_pd(uint32_t pd) {
 	);
 }
 
-void vmm_set_pde(struct vmm_pde *pd, uint16_t idx, uint32_t val) {
+void vmm_set_pde(uint16_t idx, uint32_t val) {
+	struct vmm_pde *pd = (struct vmm_pde*)((uint32_t)&_boot_page_directory_start + (uint32_t)&__high_half__);
 	pd[idx].entry = val;
 	vmm_flush_tlb();
 }
@@ -140,7 +141,7 @@ void vmm_init() {
 	uint32_t p_pd = (uint32_t)&_boot_page_directory_start;
 	uint32_t v_pd = p_pd + (uint32_t)&__high_half__;
 	
-	vmm_set_pde((struct vmm_pde*)v_pd, 1023, (p_pd & 0b11111111111111111111000000000000) | 0b11);
+	vmm_set_pde(1023, (p_pd & 0b11111111111111111111000000000000) | 0b11);
 
 	vga_putdword("\n  VMM init PD      : 0x", v_pd);
 	vga_putstr(" recursive-paging PDE: 1023, st: 0xffc00000 ");

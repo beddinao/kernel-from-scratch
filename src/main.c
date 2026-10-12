@@ -2,13 +2,7 @@
 
 int kmain(uint32_t _magic, uint32_t mm_ptr) {
 
-	*((uint32_t*)((uint32_t)&_boot_page_directory_start
-			+ (uint32_t)&__high_half__)) = 0;
-
-	asm volatile (
-		"mov eax, cr3\n"
-		"mov cr3, eax"
-	);
+	vmm_set_pde(0, 0);
 
 	vga_init();
 	print_hdr(mm_ptr);
