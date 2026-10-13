@@ -3,11 +3,8 @@
 // vga(16): bg(4) fg(4) char(8)
 
 void vga_puttoscreen(struct vga_info_st *vga_info, uint16_t pos, uint16_t ch) {
-	volatile uint16_t *screen_buff = (uint16_t*)vga_info->_sc[ vga_info->attr && 0b11 ].base_addr;
-	volatile uint16_t *vga_buff = (uint16_t*)VGA_MEM;
-
-	screen_buff[pos] = ch;
-	vga_buff[pos] = ch;
+	((uint16_t*)vga_info->_sc[vga_info->attr & 0b11].base_addr)[pos] = ch;
+	((uint16_t*)VGA_MEM)[pos] = ch;
 }
 
 void vga_clear_screen(uint8_t ch) {
